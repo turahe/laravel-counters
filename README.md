@@ -6,7 +6,6 @@
   * [1) Using Counters Associated with model](#1-using-counters-with-no-models)
   * [2) Using Counters with no models](#2-using-counters-with-no-models)
   * [3) Using artisan commands](#3-using-artisan-commands)
-  * [4) Using APIs for counters](#4-usign-apis-for-counters)
 * [Database Seeding](#database-seeding)
 
 In some cases, you need to manage the state of the counters in your laravel project, like the number of visitors of your website,
@@ -56,7 +55,7 @@ In Laravel 5.5 and higher versions, the service provider will automatically get 
 ];
 ```
 
-You must publish [the migration](https://github.com/turahe/Counters/tree/master/database/migrations) with:
+You must publish [the migration](https://github.com/turahe/laravel-counters/tree/master/database/migrations) with:
 
 ```bash
 php artisan vendor:publish --provider="Turahe\Counters\CountersServiceProvider" --tag="migrations"
@@ -205,78 +204,6 @@ The following command creates the counter number_of_downloads with initial value
 php artisan make:counter number_of_downloads Visitors 0 1
 ```
 
-## 4) Using APIs for counters
-
-In some cases, we are using a single page application, or we don't want to leave the current page. Therefore
-there are APIs to increment/decrement general/per_model_object counters.
-
-Examples
-```php
-use Turahe\Counters\Facades\Counters; 
-
-//this will return a link to increment the counter key
-//for exampel 'exmple.com/counters/increment/visitors'
-Counters::getIncrementUrl($key);
-Counters::getDecrementUrl($key);
-
-// we can use these in Blades for example,
-// <a href={{\Counters::getIncrementUrl($key)}}>Incrment Visitors</a>
-
-```
-
-by Using this link, a json structure of the updated counter will return as response
-
-```json
-{
-    "counter": {
-        "id": 1,
-        "key": "visitors",
-        "name": "Visitors",
-        "initial_value": 0,
-        "value": 9,
-        "step": 3,
-        "notes": null,
-        "created_at": "2018-07-02 20:57:03",
-        "updated_at": "2018-07-07 13:07:49"
-    }
-}
-```
-Moreover, we can increment/decrement objects counters by these methods
-
- ```php
- 
- $post = Post::find(1);
- 
- $post->getIncrementUrl($key);
- $post->getDecrementUrl($key);
- 
- ```
- And a json structure like the following will return as response
-
-```json
-{
-    "counterable": {
-        "id": 2,
-        "counterable_id": 2,
-        "counterable_type": "App\\Post",
-        "counter_id": 1,
-        "value": 24,
-        "created_at": null,
-        "updated_at": "2018-07-07 13:09:41",
-        "counter": {
-            "id": 1,
-            "key": "visitors",
-            "name": "Visitors",
-            "initial_value": 0,
-            "value": 9,
-            "step": 3,
-            "notes": null,
-            "created_at": "2018-07-02 20:57:03",
-            "updated_at": "2018-07-07 13:07:49"
-        }
-    }
-}
-```
 ## Database Seeding
 
 Here's a sample seeder.
