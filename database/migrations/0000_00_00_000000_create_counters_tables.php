@@ -14,10 +14,8 @@ class CreateCountersTables extends Migration
     public function up()
     {
 
-        $countersTable = config('counter.counter.table_name');
-        $counterableTableName = config('counter.counterable.table_name');
-        Schema::create($countersTable, function (Blueprint $table) {
-            $table->increments('id');
+        Schema::create('counters', function (Blueprint $table) {
+            $table->id();
             $table->string('key')->unique();
             $table->string('name');
             $table->double('initial_value')->default('0');
@@ -27,11 +25,10 @@ class CreateCountersTables extends Migration
             $table->timestamps();
         });
 
-        Schema::create($counterableTableName, function (Blueprint $table) {
-            $table->increments('id');
-            $table->unsignedInteger('counterable_id');
-            $table->string('counterable_type');
-            $table->unsignedInteger('counter_id');
+        Schema::create('counterables', function (Blueprint $table) {
+            $table->id();
+            $table->morphs('counterable');
+            $table->unsignedBigInteger('counter_id');
             $table->double('value')->default('0');
             $table->timestamps();
         });
@@ -44,10 +41,7 @@ class CreateCountersTables extends Migration
      */
     public function down()
     {
-        $countersTable = config('counter.counter.table_name');
-        $counterableTableName = config('counter.counterable.table_name');
-
-        Schema::dropIfExists($countersTable);
-        Schema::dropIfExists($counterableTableName);
+        Schema::dropIfExists('counterables');
+        Schema::dropIfExists('counters');
     }
 }
