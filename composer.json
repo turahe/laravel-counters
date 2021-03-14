@@ -1,0 +1,40 @@
+{
+  "name": "turahe/laravel-counters",
+  "description": "management for counters in laravel system",
+  "keywords": [
+    "Turahe",
+    "laravel",
+    "counters",
+    "increment",
+    "decrement",
+    "number of visitors",
+    "visitors"
+  ],
+  "license": "MIT",
+  "minimum-stability": "dev",
+  "require": {
+    "php": "^7.3|^8.0",
+    "illuminate/console": "5.* | ^6.0 | ^7.0 | ^8.0",
+    "illuminate/database": "5.* | ^6.0 | ^7.0 | ^8.0",
+    "illuminate/support": "5.* | ^6.0 | ^7.0 | ^8.0"
+  },
+  "prefer-stable": true,
+  "authors": [
+    {
+      "name": "Nur Wachid",
+      "email": "wachid@outlook.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Turahe\\Counters\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Turahe\\Counters\\CountersServiceProvider"
+      ]
+    }
+  }
+}
