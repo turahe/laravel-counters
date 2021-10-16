@@ -4,7 +4,6 @@ namespace Turahe\Counters\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-
 /**
  * Turahe\Counters\Models\Counterable
  *
@@ -30,6 +29,9 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Counterable extends Model
 {
+    /**
+     * @var string[]
+     */
     protected $fillable = [
         'value',
         'counter_id',
@@ -38,7 +40,11 @@ class Counterable extends Model
     ];
 
 
-    public function counter(){
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function counter()
+    {
         return $this->belongsTo(Counter::class);
     }
 }

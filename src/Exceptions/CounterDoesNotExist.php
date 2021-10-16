@@ -10,5 +10,4 @@ class CounterDoesNotExist extends InvalidArgumentException
     {
         return new static("There is no counter with key `{$key}`.");
     }
-
 }

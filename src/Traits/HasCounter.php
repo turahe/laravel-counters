@@ -20,8 +20,8 @@ trait HasCounter
         return $this->morphToMany(
             Counter::class,
             'counterable',
-                'counterables'
-            )->withPivot('value', 'id');
+            'counterables'
+        )->withPivot('value', 'id');
     }
 
     /**
@@ -79,7 +79,8 @@ trait HasCounter
         if ($counter) {
             if (! $this->hasCounter($key)) { // not to add the counter twice
                 $this->counters()->attach(
-                    $counter->id, [
+                    $counter->id,
+                    [
                         'value' => ! is_null($initialValue) ? $initialValue : $counter->initial_value,
                     ]
                 );

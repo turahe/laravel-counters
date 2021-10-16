@@ -15,7 +15,6 @@ class CountersServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-
         $this->app->booted(function () {
             $loader = AliasLoader::getInstance();
             $loader->alias('Counters', Counters::class);
@@ -30,5 +29,4 @@ class CountersServiceProvider extends ServiceProvider
             $this->commands([\Turahe\Counters\Commands\MakeCounter::class]);
         }
     }
-
 }

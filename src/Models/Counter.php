@@ -5,7 +5,6 @@ namespace Turahe\Counters\Models;
 use Illuminate\Database\Eloquent\Model;
 use Turahe\Counters\Facades\Counters;
 
-
 /**
  * Turahe\Counters\Models\Counter
  *
@@ -47,12 +46,19 @@ class Counter extends Model
         'step',
     ];
 
-    public function getIncrementUrl(){
+    /**
+     * @return mixed
+     */
+    public function getIncrementUrl()
+    {
         return Counters::getIncrementUrl($this->key);
     }
 
-    public function getDecrementUrl(){
+    /**
+     * @return mixed
+     */
+    public function getDecrementUrl()
+    {
         return Counters::getDecrementUrl($this->key);
     }
-
 }

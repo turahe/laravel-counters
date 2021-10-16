@@ -36,14 +36,13 @@ There are many other methods that are mentioned below.
 
 ## Installation
 
-- [Laravel](#laravel)
 
 ### Laravel
 
 This package can be used in Laravel 5.4 or higher. If you are using an older version of Laravel You can install the package via composer:
 
 ``` bash
-composer require turahe/laravel-counters "@dev"
+composer require turahe/laravel-counters
 ```
 
 In Laravel 5.5 and higher versions, the service provider will automatically get registered. In older versions of the framework just add the service provider in `config/app.php` file:
@@ -70,6 +69,7 @@ php artisan migrate
 
 
 ## Usage
+
 ### 1) Using Counters with no models
 First, add the `Turahe\Counters\Traits\HasCounter` trait to your  model(s):
 for example we can add it to Post Model
