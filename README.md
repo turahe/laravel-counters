@@ -128,19 +128,19 @@ $post->getCounter($key);
 // will return the counter value
 $post->getCounterValue($key);
 
-//will add record in countrable table for this post object
+//will add record in counterable table for this post object
 $post->addCounter($key);
 
-//will remove the record from countrable table for this post object.
+//will remove the record from counterable table for this post object.
 $post->removeCounter($key);
 
 //increment the counter with the given $key
-//Note that this will create record in countrable table,if it's not exist
+//Note that this will create record in counterable table,if it's not exist
 //if $step is entered, it will increment with the value of $step
 $post->incrementCounter($key, $step = null);
 
 //decrement the counter with the given $key
-//Note that this will create record in countrable table,if it's not exist
+//Note that this will create record in counterable table,if it's not exist
 //if $step is entered, it will decrement with the value of $step
 $post->decrementCounter($key, $step = null);
 
@@ -161,7 +161,7 @@ class Test
 {
     public function incrementFunction()
     {
-        //moreover you can add this function in your public page to be incremented 
+        //moreover, you can add this function in your public page to be incremented 
         //every time user hits your website
         Counters::increment('number_of_downloads');
     }
@@ -189,7 +189,7 @@ Counters::increment($key, $step = null);
 //decrement the counter with the given $key
 Counters::decrement($key, $step = null);
 
- // will reset the counter for the inital_value
+ // will reset the counter for the initial_value
 Counters::reset($key);
 ```
 
@@ -225,14 +225,14 @@ Here's a sample seeder.
         {
 
             // create Counters
-            //This will create a counter with inital value as 3, and every increment 5 will be added.
+            //This will create a counter with initial value as 3, and every increment 5 will be added.
             Counter::create([
                 'key' => 'number_of_downloads',
                 'name' => 'Visitors',
                 'initial_value' => 3,
                 'step' => 5
             ]);
-            //This counter will has 0 as inital_value and 1 as step
+            //This counter will have 0 as initial_value and 1 as step
             Counter::create([
                 'key' => 'number_of_downloads2',
                 'name' => 'Visitors2'
@@ -244,7 +244,7 @@ Here's a sample seeder.
             ]);
             
             $post = Post::find(1);
-            $post->addCounter('number_of_views');// to add the record to countrable table
+            $post->addCounter('number_of_views');// to add the record to counterable table
             
             
         }
