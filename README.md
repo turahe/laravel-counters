@@ -1,6 +1,7 @@
 # Counters Management for laravel project.
 
 [![Latest Stable Version](http://poser.pugx.org/turahe/master-data/v)](https://packagist.org/packages/turahe/master-data) [![Total Downloads](http://poser.pugx.org/turahe/master-data/downloads)](https://packagist.org/packages/turahe/master-data) [![Latest Unstable Version](http://poser.pugx.org/turahe/master-data/v/unstable)](https://packagist.org/packages/turahe/master-data) [![License](http://poser.pugx.org/turahe/master-data/license)](https://packagist.org/packages/turahe/master-data) [![PHP Version Require](http://poser.pugx.org/turahe/master-data/require/php)](https://packagist.org/packages/turahe/master-data)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/turahe/laravel-counters/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/turahe/laravel-counters/?branch=master)
 
 * [Installation](#installation)
 * [Usage](#usage)
