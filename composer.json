@@ -19,7 +19,9 @@
     "illuminate/support": "5.* | ^6.0 | ^7.0 | ^8.0"
   },
   "require-dev": {
-    "friendsofphp/php-cs-fixer": "^3.0"
+    "friendsofphp/php-cs-fixer": "^3.0",
+    "orchestra/testbench": "~3.8.4 || ^4.0 || ^5.0",
+    "phpspec/phpspec": "~5.1.1 || ^6.0"
   },
   "prefer-stable": true,
   "authors": [
@@ -33,11 +35,22 @@
       "Turahe\\Counters\\": "src/"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "Turahe\\Counters\\Tests\\": "tests/"
+    }
+  },
+  "config": {
+    "preferred-install": "dist"
+  },
   "extra": {
     "laravel": {
       "providers": [
         "Turahe\\Counters\\CountersServiceProvider"
       ]
+    },
+    "aliases": {
+      "Counters": "Turahe\\Counters\\Facades\\Counters"
     }
   }
 }
