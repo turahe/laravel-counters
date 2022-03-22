@@ -12,7 +12,7 @@ return $config
         'no_unused_imports' => true,
     ])
     ->setFinder(PhpCsFixer\Finder::create()
-        ->in(__DIR__.'./src')
+        ->in(__DIR__.'/src')
         ->name('*.php')
         ->ignoreDotFiles(true)
         ->ignoreVCS(true)
