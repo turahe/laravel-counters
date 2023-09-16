@@ -1,5 +1,4 @@
 <?php
-
 namespace Turahe\Counters\Exceptions;
 
 use InvalidArgumentException;

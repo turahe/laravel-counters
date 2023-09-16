@@ -1,9 +1,8 @@
 <?php
-
 namespace Turahe\Counters\Tests\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Turahe\Counters\Traits\HasCounter;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Turahe\Counters\Tests\Models\Post
@@ -73,5 +72,4 @@ class Post extends Model
      * @var array
      */
     protected $guarded = [];
-
 }

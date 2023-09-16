@@ -1,9 +1,8 @@
 <?php
-
 namespace Turahe\Counters\Traits;
 
-use Turahe\Counters\Facades\Counters;
 use Turahe\Counters\Models\Counter;
+use Turahe\Counters\Facades\Counters;
 
 /**
  * Trait HasCounter.
@@ -31,8 +30,9 @@ trait HasCounter
      */
     public function getCounter($key)
     {
-//        dd($this->counters);
+        //        dd($this->counters);
         $counter = $this->counters->where('key', $key)->first();
+
         //connect the counter to the object if it's not exist
         if (! $counter) {
             $this->addCounter($key);
@@ -61,6 +61,7 @@ trait HasCounter
     {
         $counter = $this->getCounter($key);
         $value = null;
+
         if ($counter) {
             $value = $counter->pivot->value;
         }
@@ -76,6 +77,7 @@ trait HasCounter
     public function addCounter($key, $initialValue = null)
     {
         $counter = Counters::get($key);
+
         if ($counter) {
             if (! $this->hasCounter($key)) { // not to add the counter twice
                 $this->counters()->attach(
@@ -99,6 +101,7 @@ trait HasCounter
     public function removeCounter($key)
     {
         $counter = Counters::get($key);
+
         if ($counter) {
             $this->counters()->detach($counter->id);
         } else {
@@ -115,6 +118,7 @@ trait HasCounter
     public function incrementCounter($key, $step = null)
     {
         $counter = $this->getCounter($key);
+
         if ($counter) {
             $this->counters()->updateExistingPivot($counter->id, ['value' => $counter->pivot->value + ($step ?? $counter->step)]);
         } else {
@@ -133,6 +137,7 @@ trait HasCounter
     public function decrementCounter($key, $step = null)
     {
         $counter = $this->getCounter($key);
+
         if ($counter) {
             $this->counters()->updateExistingPivot($counter->id, ['value' => $counter->pivot->value - ($step ?? $counter->step)]);
         } else {
@@ -151,6 +156,7 @@ trait HasCounter
     public function resetCounter($key, $initalVlaue = null)
     {
         $counter = $this->getCounter($key);
+
         if ($counter) {
             $this->counters()->updateExistingPivot($counter->id, ['value' =>$initalVlaue ?? $counter->initial_value]);
         } else {

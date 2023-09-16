@@ -1,10 +1,9 @@
 <?php
-
 namespace Turahe\Counters\Classes;
 
-use Turahe\Counters\Exceptions\CounterAlreadyExists;
-use Turahe\Counters\Exceptions\CounterDoesNotExist;
 use Turahe\Counters\Models\Counter;
+use Turahe\Counters\Exceptions\CounterDoesNotExist;
+use Turahe\Counters\Exceptions\CounterAlreadyExists;
 
 /**
  * Class Counters.
@@ -22,6 +21,7 @@ class Counters
     public function create($key, $name, $initial_value = 0, $step = 1)
     {
         $value = $initial_value;
+
         try {
             Counter::query()->create(
                 compact('key', 'name', 'initial_value', 'step', 'value')
@@ -39,6 +39,7 @@ class Counters
     public function get($key)
     {
         $counter = Counter::query()->where('key', $key)->first();
+
         if (is_null($counter)) {
             throw CounterDoesNotExist::create($key);
         }
@@ -56,13 +57,14 @@ class Counters
     public function getValue($key, $default = null)
     {
         $counter = Counter::query()->where('key', $key)->first();
+
         if ($counter) {
             return $counter->value;
         } elseif (! is_null($default)) {
             return $default;
-        } else {
-            throw CounterDoesNotExist::create($key);
         }
+
+        throw CounterDoesNotExist::create($key);
     }
 
     /**
@@ -94,6 +96,7 @@ class Counters
     public function increment($key, $step = null)
     {
         $counter = $this->get($key);
+
         if ($counter) {
             $counter->update(['value' => $counter->value + ($step ?? $counter->step)]);
         }
@@ -110,6 +113,7 @@ class Counters
     public function decrement($key, $step = null)
     {
         $counter = $this->get($key);
+
         if ($counter) {
             $counter->update(['value' => $counter->value - ($step ?? $counter->step)]);
         }
@@ -124,6 +128,7 @@ class Counters
     public function reset($key)
     {
         $counter = $this->get($key);
+
         if ($counter) {
             $counter->update(['value' => $counter->initial_value]);
         }
@@ -140,6 +145,7 @@ class Counters
     public function incrementIfNotHasCookies($key, $step = null)
     {
         $cookieName = $this->getCookieName($key);
+
         if (! array_key_exists($cookieName, $_COOKIE)) {
             $this->increment($key, $step);
             setcookie($cookieName, 1);
@@ -155,6 +161,7 @@ class Counters
     public function decrementIfNotHasCookies($key, $step = null)
     {
         $cookieName = $this->getCookieName($key);
+
         if (! array_key_exists($cookieName, $_COOKIE)) {
             $this->decrement($key, $step);
             setcookie($cookieName, 1);

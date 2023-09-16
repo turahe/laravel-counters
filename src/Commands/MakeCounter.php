@@ -1,5 +1,4 @@
 <?php
-
 namespace Turahe\Counters\Commands;
 
 use Illuminate\Console\Command;
@@ -40,7 +39,6 @@ class MakeCounter extends Command
     {
         $this->line('[Counters] Creating the counter...');
 
-
         $key = $this->argument('key');
         $name = $this->argument('name');
         $initial_value = $this->argument('initial_value');
@@ -51,7 +49,6 @@ class MakeCounter extends Command
         Counter::query()->create(
             compact('key', 'name', 'initial_value', 'step', 'value')
         );
-
 
         $this->info("[Counters] Counter $key created Successfully");
 

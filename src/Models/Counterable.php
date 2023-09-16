@@ -1,5 +1,4 @@
 <?php
-
 namespace Turahe\Counters\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -38,7 +37,6 @@ class Counterable extends Model
         'counterable_id',
         'counterable_type',
     ];
-
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo

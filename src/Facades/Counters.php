@@ -1,5 +1,4 @@
 <?php
-
 namespace Turahe\Counters\Facades;
 
 use Illuminate\Support\Facades\Facade;

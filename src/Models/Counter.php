@@ -1,9 +1,8 @@
 <?php
-
 namespace Turahe\Counters\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Turahe\Counters\Facades\Counters;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Turahe\Counters\Models\Counter

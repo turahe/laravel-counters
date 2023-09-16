@@ -1,9 +1,7 @@
 <?php
-
 namespace Turahe\Counters\Tests;
 
 use Illuminate\Database\Schema\Blueprint;
-use Mockery;
 
 class TestCase extends \Orchestra\Testbench\TestCase
 {
@@ -14,7 +12,6 @@ class TestCase extends \Orchestra\Testbench\TestCase
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
         $this->setUpDatabase();
     }
-
 
     /**
      * {@inheritdoc}
@@ -31,9 +28,9 @@ class TestCase extends \Orchestra\Testbench\TestCase
     {
         $app['config']->set('database.default', 'sqlite');
         $app['config']->set('database.connections.sqlite', [
-            'driver' => 'sqlite',
+            'driver'   => 'sqlite',
             'database' => ':memory:',
-            'prefix' => '',
+            'prefix'   => '',
         ]);
         $app['config']->set('app.key', 'base64:MFOsOH9RomiI2LRdgP4hIeoQJ5nyBhdABdH77UY2zi8=');
     }
@@ -45,7 +42,5 @@ class TestCase extends \Orchestra\Testbench\TestCase
             $table->string('name');
             $table->timestamps();
         });
-
     }
-
 }
