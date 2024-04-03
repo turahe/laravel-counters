@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property float $value
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Turahe\Counters\Models\Counter $counter
+ * @property-read Counter $counter
  * @method static \Illuminate\Database\Eloquent\Builder|Counterable newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Counterable newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Counterable query()

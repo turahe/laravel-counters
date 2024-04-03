@@ -24,7 +24,7 @@ class CountersServiceProvider extends ServiceProvider
         ], 'migrations');
 
         if ($this->app->runningInConsole()) {
-            $this->commands([\Turahe\Counters\Commands\MakeCounter::class]);
+            $this->commands([Commands\MakeCounter::class]);
         }
     }
 }
