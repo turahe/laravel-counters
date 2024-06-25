@@ -20,7 +20,8 @@ trait HasCounter
             Counter::class,
             'counterable',
             'counterables'
-        )->withPivot('value', 'id');
+        )->withPivot('value', 'id')
+            ->withTimestamps();
     }
 
     /**
