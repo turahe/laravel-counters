@@ -2,7 +2,6 @@
 namespace Turahe\Counters;
 
 use Turahe\Counters\Facades\Counters;
-use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\ServiceProvider;
 
 class CountersServiceProvider extends ServiceProvider
@@ -14,11 +13,6 @@ class CountersServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->app->booted(function () {
-            $loader = AliasLoader::getInstance();
-            $loader->alias('Counters', Counters::class);
-        });
-
         $this->publishes([
             __DIR__.'/../database/migrations/0000_00_00_000000_create_counters_tables.php' => $this->app->databasePath().'/migrations/0000_00_00_000000_create_counters_tables.php',
         ], 'migrations');
@@ -31,5 +25,13 @@ class CountersServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([Commands\MakeCounter::class]);
         }
+    }
+
+    public function register()
+    {
+        $this->mergeConfigFrom(__DIR__.'/../config/counter.php', 'counter');
+        $this->app->singleton('Counter', function ($app) {
+            return new Counters();
+        });
     }
 }
