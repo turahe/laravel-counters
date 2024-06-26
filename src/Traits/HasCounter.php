@@ -17,9 +17,9 @@ trait HasCounter
     public function counters()
     {
         return $this->morphToMany(
-            Counter::class,
+            config('counter.models.counter'),
             'counterable',
-            'counterables'
+            config('counter.models.table_pivot_name')
         )->withPivot('value', 'id')
             ->withTimestamps();
     }
@@ -31,7 +31,6 @@ trait HasCounter
      */
     public function getCounter($key)
     {
-        //        dd($this->counters);
         $counter = $this->counters->where('key', $key)->first();
 
         //connect the counter to the object if it's not exist
@@ -55,13 +54,13 @@ trait HasCounter
 
     /**
      * @param $key
-     * @return null
+     * @return int
      * Get the related model value of the counter for the given $key
      */
-    public function getCounterValue($key)
+    public function getCounterValue($key): int
     {
         $counter = $this->getCounter($key);
-        $value = null;
+        $value = 0;
 
         if ($counter) {
             $value = $counter->pivot->value;

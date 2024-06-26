@@ -64,7 +64,7 @@ In Laravel 5.5 and higher versions, the service provider will automatically get 
 You must publish [the migration](https://github.com/turahe/laravel-counters/tree/master/database/migrations) with:
 
 ```bash
-php artisan vendor:publish --provider="Turahe\Counters\CountersServiceProvider" --tag="migrations"
+php artisan vendor:publish --provider="Turahe\Counters\CountersServiceProvider"
 ```
 
 After the migration has been published you can create the tables by running the migrations:
