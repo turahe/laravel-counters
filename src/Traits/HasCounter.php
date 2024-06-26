@@ -31,6 +31,7 @@ trait HasCounter
      */
     public function getCounter($key)
     {
+//        dd($this->counters()->toRawSql());
         $counter = $this->counters->where('key', $key)->first();
 
         //connect the counter to the object if it's not exist
@@ -49,7 +50,7 @@ trait HasCounter
      */
     public function hasCounter($key)
     {
-        return ! is_null($this->counters()->where('counters.key', $key)->first());
+        return ! is_null($this->counters()->where(config('counter.models.table_name').'.key', $key)->first());
     }
 
     /**

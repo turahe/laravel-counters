@@ -38,6 +38,19 @@ class Counterable extends Model
         'counterable_type',
     ];
 
+    public function __construct(array $attributes = [])
+    {
+        if (! isset($this->connection)) {
+            $this->setConnection(config('counter.models.database_connection'));
+        }
+
+        if (! isset($this->table)) {
+            $this->setTable(config('counter.models.table_pivot_name'));
+        }
+
+        parent::__construct($attributes);
+    }
+
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
