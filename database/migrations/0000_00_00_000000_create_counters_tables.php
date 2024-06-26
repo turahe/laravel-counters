@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
 
-        Schema::create('counters', function (Blueprint $table) {
+        Schema::connection(config('counter.database_connection'))->create(config('counter.table_name'), function (Blueprint $table) {
             $table->id();
             $table->string('key')->unique();
             $table->string('name');
@@ -25,7 +25,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('counterables', function (Blueprint $table) {
+        Schema::connection(config('counter.database_connection'))->create(config('counter.table_pivot_name'), function (Blueprint $table) {
             $table->id();
             $table->morphs('counterable');
             $table->unsignedBigInteger('counter_id');
@@ -41,7 +41,7 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('counterables');
-        Schema::dropIfExists('counters');
+        Schema::connection(config('counter.database_connection'))->dropIfExists(config('counter.table_pivot_name'));
+        Schema::connection(config('counter.database_connection'))->dropIfExists(config('counter.table_name'));
     }
 };
