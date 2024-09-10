@@ -19,9 +19,9 @@
     "illuminate/support": "^8.0|| ^9.0|| ^10.0|| ^11.0"
   },
   "require-dev": {
-    "friendsofphp/php-cs-fixer": "^3.1",
     "orchestra/testbench": "^8.0|| ^9.0",
-    "phpspec/phpspec": "^6.0 || ^7.0"
+    "phpspec/phpspec": "^6.0 || ^7.0",
+    "laravel/pint": "^1.17"
   },
   "prefer-stable": true,
   "authors": [

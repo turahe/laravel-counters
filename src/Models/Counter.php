@@ -1,8 +1,9 @@
 <?php
+
 namespace Turahe\Counters\Models;
 
-use Turahe\Counters\Facades\Counters;
 use Illuminate\Database\Eloquent\Model;
+use Turahe\Counters\Facades\Counters;
 
 /**
  * Turahe\Counters\Models\Counter
@@ -16,6 +17,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $notes
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ *
  * @method static \Illuminate\Database\Eloquent\Builder|Counter newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Counter newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Counter query()
@@ -28,6 +30,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Counter whereStep($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Counter whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Counter whereValue($value)
+ *
  * @mixin \Eloquent
  */
 class Counter extends Model

@@ -1,10 +1,11 @@
 <?php
+
 namespace Turahe\Counters;
 
-use Illuminate\Support\Collection;
 use Illuminate\Filesystem\Filesystem;
-use Turahe\Counters\Facades\Counters;
+use Illuminate\Support\Collection;
 use Illuminate\Support\ServiceProvider;
+use Turahe\Counters\Facades\Counters;
 
 class CountersServiceProvider extends ServiceProvider
 {
@@ -24,7 +25,7 @@ class CountersServiceProvider extends ServiceProvider
         ], 'config');
 
         if ($this->app instanceof \Illuminate\Foundation\Application) {
-            $databasePath = __DIR__ . '/../database/migrations';
+            $databasePath = __DIR__.'/../database/migrations';
             $this->loadMigrationsFrom($databasePath);
         }
 
@@ -37,7 +38,7 @@ class CountersServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__.'/../config/counter.php', 'counter');
         $this->app->singleton('Counter', function ($app) {
-            return new Counters();
+            return new Counters;
         });
     }
 

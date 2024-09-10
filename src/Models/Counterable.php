@@ -1,4 +1,5 @@
 <?php
+
 namespace Turahe\Counters\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read Counter $counter
+ *
  * @method static \Illuminate\Database\Eloquent\Builder|Counterable newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Counterable newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Counterable query()
@@ -24,6 +26,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Counterable whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Counterable whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Counterable whereValue($value)
+ *
  * @mixin \Eloquent
  */
 class Counterable extends Model

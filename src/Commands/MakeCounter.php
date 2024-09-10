@@ -1,4 +1,5 @@
 <?php
+
 namespace Turahe\Counters\Commands;
 
 use Illuminate\Console\Command;
@@ -52,6 +53,5 @@ class MakeCounter extends Command
 
         $this->info("[Counters] Counter $key created Successfully");
 
-        return;
     }
 }

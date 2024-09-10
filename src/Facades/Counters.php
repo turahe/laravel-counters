@@ -1,11 +1,12 @@
 <?php
+
 namespace Turahe\Counters\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
 /**
  * Class Counters.
- * @package Turahe\Counters\Facades
+ *
  * @method static create($key, $name, $initial_value = 0, $step = 1)
  * @method static get($key)
  * @method static getValue($key, $default = null)

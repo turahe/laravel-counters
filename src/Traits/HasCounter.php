@@ -1,18 +1,18 @@
 <?php
+
 namespace Turahe\Counters\Traits;
 
-use Turahe\Counters\Models\Counter;
 use Turahe\Counters\Facades\Counters;
+use Turahe\Counters\Models\Counter;
 
 /**
  * Trait HasCounter.
- * @package Turahe\Counters\Traits
  */
 trait HasCounter
 {
     /**
      * @return mixed
-     * The morph relation between any model and counters
+     *               The morph relation between any model and counters
      */
     public function counters()
     {
@@ -25,13 +25,12 @@ trait HasCounter
     }
 
     /**
-     * @param $key
      * @return mixed
-     * Get counter related to the relation with the given $key
+     *               Get counter related to the relation with the given $key
      */
     public function getCounter($key)
     {
-//        dd($this->counters()->toRawSql());
+        //        dd($this->counters()->toRawSql());
         $counter = $this->counters->where('key', $key)->first();
 
         //connect the counter to the object if it's not exist
@@ -44,9 +43,8 @@ trait HasCounter
     }
 
     /**
-     * @param $key
      * @return bool
-     * check if the related model has counter with the given key
+     *              check if the related model has counter with the given key
      */
     public function hasCounter($key)
     {
@@ -54,9 +52,8 @@ trait HasCounter
     }
 
     /**
-     * @param $key
      * @return int
-     * Get the related model value of the counter for the given $key
+     *             Get the related model value of the counter for the given $key
      */
     public function getCounterValue($key): int
     {
@@ -71,9 +68,8 @@ trait HasCounter
     }
 
     /**
-     * @param $key
-     * @param null $initialValue
-     * Add a record to counterable table (make relation with the given $key)
+     * @param  null  $initialValue
+     *                              Add a record to counterable table (make relation with the given $key)
      */
     public function addCounter($key, $initialValue = null)
     {
@@ -96,8 +92,8 @@ trait HasCounter
     }
 
     /**
-     * @param $key
-     * Remove the relation in counterable table
+     * @param  $key
+     *              Remove the relation in counterable table
      */
     public function removeCounter($key)
     {
@@ -111,10 +107,9 @@ trait HasCounter
     }
 
     /**
-     * @param $key
-     * @param null $step
+     * @param  null  $step
      * @return mixed
-     * Increment the counterable in the relation table for the given $key
+     *               Increment the counterable in the relation table for the given $key
      */
     public function incrementCounter($key, $step = null)
     {
@@ -130,10 +125,9 @@ trait HasCounter
     }
 
     /**
-     * @param $key
-     * @param null $step
+     * @param  null  $step
      * @return mixed
-     * Decrement the counterable in the relation table for the given $key
+     *               Decrement the counterable in the relation table for the given $key
      */
     public function decrementCounter($key, $step = null)
     {
@@ -149,17 +143,16 @@ trait HasCounter
     }
 
     /**
-     * @param $key
-     * @param null $initalVlaue
+     * @param  null  $initalVlaue
      * @return mixed
-     * Reset the counterable in the relation table to the initial value for the given $key
+     *               Reset the counterable in the relation table to the initial value for the given $key
      */
     public function resetCounter($key, $initalVlaue = null)
     {
         $counter = $this->getCounter($key);
 
         if ($counter) {
-            $this->counters()->updateExistingPivot($counter->id, ['value' =>$initalVlaue ?? $counter->initial_value]);
+            $this->counters()->updateExistingPivot($counter->id, ['value' => $initalVlaue ?? $counter->initial_value]);
         } else {
             logger("In resetCounter: Counter Is not found for key $key");
         }

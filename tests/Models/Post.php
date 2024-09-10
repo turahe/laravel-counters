@@ -1,8 +1,9 @@
 <?php
+
 namespace Turahe\Counters\Tests\Models;
 
-use Turahe\Counters\Traits\HasCounter;
 use Illuminate\Database\Eloquent\Model;
+use Turahe\Counters\Traits\HasCounter;
 
 /**
  * Turahe\Counters\Tests\Models\Post
@@ -30,6 +31,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection|\Turahe\Counters\Models\Counter[] $counters
  * @property-read int|null $counters_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder|Post newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Post newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Post query()
@@ -54,6 +56,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Post whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Post whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Post whereUserId($value)
+ *
  * @mixin \Eloquent
  */
 class Post extends Model
@@ -66,6 +69,7 @@ class Post extends Model
      * @var string
      */
     protected $table = 'posts';
+
     /**
      * The attributes that aren't mass assignable.
      *
