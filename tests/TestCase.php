@@ -3,10 +3,15 @@
 namespace Turahe\Counters\Tests;
 
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\WithFaker;
 
 class TestCase extends \Orchestra\Testbench\TestCase
 {
-    public function setUp(): void
+    use RefreshDatabase;
+    use WithFaker;
+
+    protected function setUp(): void
     {
         parent::setUp();
 

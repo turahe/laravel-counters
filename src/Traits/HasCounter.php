@@ -2,8 +2,10 @@
 
 namespace Turahe\Counters\Traits;
 
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Turahe\Counters\Facades\Counters;
 use Turahe\Counters\Models\Counter;
+use Turahe\Counters\Models\Counterable;
 
 /**
  * Trait HasCounter.
@@ -11,29 +13,30 @@ use Turahe\Counters\Models\Counter;
 trait HasCounter
 {
     /**
+     * The morph relation between any model and counters
+     *
      * @return mixed
-     *               The morph relation between any model and counters
      */
-    public function counters()
+    public function counters(): MorphToMany
     {
         return $this->morphToMany(
-            config('counter.models.counter'),
-            'counterable',
-            config('counter.models.table_pivot_name')
-        )->withPivot('value', 'id')
+            related: config('counter.models.counter', Counter::class),
+            name: 'counterable',
+            table: config('counter.models.table_pivot_name')
+        )->withPivot('value')
             ->withTimestamps();
     }
 
     /**
+     * Get counter related to the relation with the given $key
+     *
      * @return mixed
-     *               Get counter related to the relation with the given $key
      */
-    public function getCounter($key)
+    public function getCounter(string $key)
     {
-        //        dd($this->counters()->toRawSql());
         $counter = $this->counters->where('key', $key)->first();
 
-        //connect the counter to the object if it's not exist
+        // connect the counter to the object if it's not exist
         if (! $counter) {
             $this->addCounter($key);
             $counter = $this->counters->where('key', $key)->first();
@@ -43,120 +46,89 @@ trait HasCounter
     }
 
     /**
-     * @return bool
-     *              check if the related model has counter with the given key
+     * check if the related model has counter with the given key
      */
-    public function hasCounter($key)
+    public function hasCounter(string $key): bool
     {
         return ! is_null($this->counters()->where(config('counter.models.table_name').'.key', $key)->first());
     }
 
     /**
-     * @return int
-     *             Get the related model value of the counter for the given $key
+     * Get the related model value of the counter for the given $key
      */
-    public function getCounterValue($key): int
+    public function getCounterValue(string $key): int
     {
         $counter = $this->getCounter($key);
         $value = 0;
 
-        if ($counter) {
-            $value = $counter->pivot->value;
+        if ($pivot = $counter->pivot) {
+            $value = $pivot?->value;
         }
 
         return $value;
     }
 
     /**
-     * @param  null  $initialValue
-     *                              Add a record to counterable table (make relation with the given $key)
+     * Add a record to counterable table (make relation with the given $key)
      */
-    public function addCounter($key, $initialValue = null)
+    public function addCounter(string $key, ?int $initialValue = null): void
     {
         $counter = Counters::get($key);
 
-        if ($counter) {
-            if (! $this->hasCounter($key)) { // not to add the counter twice
-                $this->counters()->attach(
-                    $counter->id,
-                    [
-                        'value' => ! is_null($initialValue) ? $initialValue : $counter->initial_value,
-                    ]
-                );
-            } else {
-                logger("In addCounter: This object already has counter for $key");
-            }
-        } else {
-            logger("In addCounter: Counter Is not found for key $key");
-        }
+        $this->counters()->attach($this->getKey(), [
+            'value' => ! is_null($initialValue) ? $initialValue : $counter->initial_value,
+        ]);
+
     }
 
     /**
      * @param  $key
      *              Remove the relation in counterable table
      */
-    public function removeCounter($key)
+    public function removeCounter(string $key): bool
     {
         $counter = Counters::get($key);
 
         if ($counter) {
-            $this->counters()->detach($counter->id);
-        } else {
-            logger("In removeCounter: Counter Is not found for key $key");
+            return $this->counters()->detach($counter->getKey());
         }
+
+        return false;
     }
 
     /**
-     * @param  null  $step
-     * @return mixed
-     *               Increment the counterable in the relation table for the given $key
+     * Increment the counterable in the relation table for the given $key
      */
-    public function incrementCounter($key, $step = null)
+    public function incrementCounter(string $key, ?int $step = null): void
     {
         $counter = $this->getCounter($key);
 
-        if ($counter) {
-            $this->counters()->updateExistingPivot($counter->id, ['value' => $counter->pivot->value + ($step ?? $counter->step)]);
-        } else {
-            logger("In incrementCounter: Counter Is not found for key $key");
-        }
-
-        return $counter;
+        $this->counters()->updateExistingPivot($this->getKey(), [
+            'value' => $counter->pivot->value + ($step ?? $counter->step),
+        ]);
     }
 
     /**
-     * @param  null  $step
+     * Decrement the counterable in the relation table for the given $key
+     *
      * @return mixed
-     *               Decrement the counterable in the relation table for the given $key
      */
-    public function decrementCounter($key, $step = null)
+    public function decrementCounter(string $key, ?int $step = null): bool
     {
         $counter = $this->getCounter($key);
 
-        if ($counter) {
-            $this->counters()->updateExistingPivot($counter->id, ['value' => $counter->pivot->value - ($step ?? $counter->step)]);
-        } else {
-            logger("In decrementCounter: Counter Is not found for key $key");
-        }
-
-        return $counter;
+        return $this->counters()->updateExistingPivot($counter->getKey(), ['value' => $counter->pivot->value - ($step ?? $counter->step)]);
     }
 
     /**
-     * @param  null  $initalVlaue
+     * Reset the counterable in the relation table to the initial value for the given $key
+     *
      * @return mixed
-     *               Reset the counterable in the relation table to the initial value for the given $key
      */
-    public function resetCounter($key, $initalVlaue = null)
+    public function resetCounter(string $key, ?int $initialValue = null): bool
     {
         $counter = $this->getCounter($key);
 
-        if ($counter) {
-            $this->counters()->updateExistingPivot($counter->id, ['value' => $initalVlaue ?? $counter->initial_value]);
-        } else {
-            logger("In resetCounter: Counter Is not found for key $key");
-        }
-
-        return $counter;
+        return $this->counters()->updateExistingPivot($counter->id, ['value' => $initialValue ?? $counter->initial_value]);
     }
 }

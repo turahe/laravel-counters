@@ -1,6 +1,7 @@
 {
   "name": "turahe/laravel-counters",
   "description": "management for counters in laravel system",
+  "license": "MIT",
   "keywords": [
     "Turahe",
     "laravel",
@@ -10,26 +11,25 @@
     "number of visitors",
     "visitors"
   ],
-  "license": "MIT",
-  "minimum-stability": "dev",
-  "require": {
-    "php": "^8.2",
-    "illuminate/console": "^8.0 || ^9.0|| ^10.0|| ^11.0",
-    "illuminate/database": "^8.0|| ^9.0|| ^10.0|| ^11.0",
-    "illuminate/support": "^8.0|| ^9.0|| ^10.0|| ^11.0"
-  },
-  "require-dev": {
-    "orchestra/testbench": "^8.0|| ^9.0",
-    "phpspec/phpspec": "^6.0 || ^7.0",
-    "laravel/pint": "^1.17"
-  },
-  "prefer-stable": true,
   "authors": [
     {
       "name": "Nur Wachid",
-      "email": "wachid@outlook.com"
+      "email": "wachid@outlook.com",
+      "homepage": "https://www.wach.id"
     }
   ],
+  "homepage": "https://github.com/turahe/laravel-counters",
+  "require": {
+    "php": "^8.2",
+    "laravel/framework": "^10.0 || ^11.0 || ^12.0"
+  },
+  "require-dev": {
+    "laravel/pint": "^1.17",
+    "orchestra/testbench": "^8.0 || ^9.0 || ^10.0",
+    "phpspec/phpspec": "^6.0 || ^7.0"
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true,
   "autoload": {
     "psr-4": {
       "Turahe\\Counters\\": "src/"
@@ -41,16 +41,17 @@
     }
   },
   "config": {
-    "preferred-install": "dist"
+    "preferred-install": "dist",
+    "sort-packages": true
   },
   "extra": {
+    "aliases": {
+      "Counters": "Turahe\\Counters\\Facades\\Counters"
+    },
     "laravel": {
       "providers": [
         "Turahe\\Counters\\CountersServiceProvider"
       ]
-    },
-    "aliases": {
-      "Counters": "Turahe\\Counters\\Facades\\Counters"
     }
   }
 }

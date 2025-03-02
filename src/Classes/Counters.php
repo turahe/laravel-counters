@@ -12,15 +12,14 @@ use Turahe\Counters\Models\Counter;
 class Counters
 {
     /**
-     * @param  int  $step
-     *                     Creating a record in counters table with $key, $name, $inital_value, $step
+     * Creating a record in counters table with $key, $name, $initial_value, $step
      */
-    public function create(string $key, $name, int $initial_value = 0, int $step = 1)
+    public function create(string $key, $name, int $initial_value = 0, int $step = 1): Counter
     {
         $value = $initial_value;
 
         try {
-            Counter::query()->create(
+            return Counter::query()->create(
                 compact('key', 'name', 'initial_value', 'step', 'value')
             );
         } catch (\Exception $e) {
@@ -29,10 +28,9 @@ class Counters
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Model|Counter
-     *                                                                                           Get a counter object for the given $key
+     * Get a counter object for the given $key
      */
-    public function get($key)
+    public function get(string|int $key): ?Counter
     {
         $counter = Counter::query()->where('key', $key)->first();
 
@@ -44,14 +42,12 @@ class Counters
     }
 
     /**
-     * @param  null  $default
-     * @return mixed|null|string
-     *                           get the counter value for the given $key,
-     *                           $default will be returned in case the key is not found
+     * get the counter value for the given $key,
+     * $default will be returned in case the key is not found
      */
-    public function getValue(string $key, $default = null)
+    public function getValue(string $key, $default = null): ?int
     {
-        $counter = Counter::query()->where('key', $key)->first();
+        $counter = $this->get($key);
 
         if ($counter) {
             return $counter->value;
@@ -63,101 +59,106 @@ class Counters
     }
 
     /**
-     * @param  $value
-     *                set the value of the given counter's key
+     * set the value of the given counter's key
      */
-    public function setValue(string $key, string|array $value)
+    public function setValue(string $key, string|array $value): bool
     {
-        Counter::query()->where('key', $key)->update(['value' => $value]);
+        $counter = $this->get($key);
+        if ($counter) {
+            return $counter->update(['value' => $value]);
+        }
+        throw CounterDoesNotExist::create($key);
     }
 
     /**
-     * @param  $step
-     *               set the step value for a given counter's
+     * set the step value for a given counter's
      */
-    public function setStep(string $key, int $step)
+    public function setStep(string $key, int $step): bool
     {
-        Counter::query()->where('key', $key)->update(['step' => $step]);
+        $counter = $this->get($key);
+        if ($counter) {
+            return $counter->update(['step' => $step]);
+        }
+        throw CounterDoesNotExist::create($key);
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Model|Counters|null
-     *                                                           increment the counter with the step
+     * increment the counter with the step
      */
-    public function increment(string $key, ?int $step = null)
+    public function increment(string $key, ?int $step = null): bool
     {
         $counter = $this->get($key);
 
         if ($counter) {
-            $counter->update(['value' => $counter->value + ($step ?? $counter->step)]);
+            return $counter->update(['value' => $counter->value + ($step ?? $counter->step)]);
         }
-
-        return $counter;
+        throw CounterDoesNotExist::create($key);
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Model|Counters|null
-     *                                                           decrement the counter with the step
+     * decrement the counter with the step
      */
-    public function decrement(string $key, ?int $step = null)
+    public function decrement(string $key, ?int $step = null): bool
     {
         $counter = $this->get($key);
 
         if ($counter) {
-            $counter->update(['value' => $counter->value - ($step ?? $counter->step)]);
+            return $counter->update(['value' => $counter->value - ($step ?? $counter->step)]);
         }
-
-        return $counter;
+        throw CounterDoesNotExist::create($key);
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Model|Counters|null
+     * reset the counter with the default value of counter
      */
-    public function reset(string $key)
+    public function reset(string $key): bool
     {
         $counter = $this->get($key);
 
         if ($counter) {
-            $counter->update(['value' => $counter->initial_value]);
+            return $counter->update(['value' => $counter->initial_value]);
         }
-
-        return $counter;
+        throw CounterDoesNotExist::create($key);
     }
 
     /**
-     * @param  string  $key
-     *                       This function will store a cookie for the counter key
-     *                       If the cookie already exist, the counter will not incremented again
+     * This function will store a cookie for the counter key
+     * If the cookie already exist, the counter will not incremented again
      */
-    public function incrementIfNotHasCookies(string $key, ?int $step = null)
+    public function incrementIfNotHasCookies(string $key, ?int $step = null): bool
     {
         $cookieName = $this->getCookieName($key);
 
         if (! array_key_exists($cookieName, $_COOKIE)) {
             $this->increment($key, $step);
-            setcookie($cookieName, 1);
+
+            return setcookie($cookieName, 1);
         }
+
+        return false;
     }
 
     /**
-     * @param  string|$key
-     *              This function will store a cookie for the counter key
-     *              If the cookie already exist, the counter will not decremented again
+     * This function will store a cookie for the counter key
+     * If the cookie already exist, the counter will not decremented again
      */
-    public function decrementIfNotHasCookies(string $key, ?int $step = null)
+    public function decrementIfNotHasCookies(string $key, ?int $step = null): bool
     {
         $cookieName = $this->getCookieName($key);
 
         if (! array_key_exists($cookieName, $_COOKIE)) {
             $this->decrement($key, $step);
-            setcookie($cookieName, 1);
+
+            return setcookie($cookieName, 1);
         }
+
+        return false;
     }
 
     /**
-     * @return string
+     * Get Cookie name
      */
-    private function getCookieName(string $key)
+    private function getCookieName(string $key): string
     {
         return 'counters-cookie-'.$key;
     }

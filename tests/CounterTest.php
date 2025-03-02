@@ -6,11 +6,10 @@ use Turahe\Counters\Models\Counter;
 
 class CounterTest extends TestCase
 {
-    /** @test */
-    public function a_counter_can_seed_simple_test()
+    public function test_a_counter_can_seed_simple_test()
     {
         // create Counters
-        //This will create a counter with inital value as 3, and every increment 5 will be added.
+        // This will create a counter with inital value as 3, and every increment 5 will be added.
         $counter = Counter::create([
             'key' => 'number_of_downloads',
             'name' => 'Visitors',
@@ -24,8 +23,7 @@ class CounterTest extends TestCase
         $this->assertEquals(5, $counter->step);
     }
 
-    /** @test */
-    public function a_create_name_key_only()
+    public function test_a_create_name_key_only()
     {
         $counter = Counter::create([
             'key' => 'number_of_downloads',
