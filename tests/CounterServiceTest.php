@@ -53,9 +53,13 @@ class CounterServiceTest extends TestCase
 
         $counterValue1 = $counterModel->getValue('counter');
         $this->assertEquals(0, $counterValue1);
+    }
 
-        $counterValue2 = $counterModel->getValue('counter-not-found', 1);
-        $this->assertEquals(1, $counterValue2);
+    public function test_get_value_counter_not_found_throws_exception()
+    {
+        $this->expectException(CounterDoesNotExist::class);
+        $counterModel = new Counters;
+        $counterModel->getValue('counter-not-found', 1);
     }
 
     public function test_can_set_value_counter()
@@ -136,5 +140,45 @@ class CounterServiceTest extends TestCase
             'step' => 1,
         ]);
 
+    }
+
+    public function test_increment_if_not_has_cookies_increments_and_sets_cookie()
+    {
+        $counterModel = new Counters;
+        $counterModel->create('cookie_counter', 'cookie_counter', 0, 1);
+        
+        // Simulate no cookie present
+        unset($_COOKIE['counters-cookie-cookie_counter']);
+        
+        $result = $counterModel->incrementIfNotHasCookies('cookie_counter');
+        $this->assertTrue($result);
+        $this->assertDatabaseHas('counters', [
+            'key' => 'cookie_counter',
+            'value' => 1,
+        ]);
+        // Simulate cookie present
+        $_COOKIE['counters-cookie-cookie_counter'] = 1;
+        $result = $counterModel->incrementIfNotHasCookies('cookie_counter');
+        $this->assertFalse($result);
+    }
+
+    public function test_decrement_if_not_has_cookies_decrements_and_sets_cookie()
+    {
+        $counterModel = new Counters;
+        $counterModel->create('cookie_counter_dec', 'cookie_counter_dec', 2, 1);
+        
+        // Simulate no cookie present
+        unset($_COOKIE['counters-cookie-cookie_counter_dec']);
+        
+        $result = $counterModel->decrementIfNotHasCookies('cookie_counter_dec');
+        $this->assertTrue($result);
+        $this->assertDatabaseHas('counters', [
+            'key' => 'cookie_counter_dec',
+            'value' => 1,
+        ]);
+        // Simulate cookie present
+        $_COOKIE['counters-cookie-cookie_counter_dec'] = 1;
+        $result = $counterModel->decrementIfNotHasCookies('cookie_counter_dec');
+        $this->assertFalse($result);
     }
 }

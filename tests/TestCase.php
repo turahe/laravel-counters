@@ -39,6 +39,10 @@ class TestCase extends \Orchestra\Testbench\TestCase
             'prefix' => '',
         ]);
         $app['config']->set('app.key', 'base64:MFOsOH9RomiI2LRdgP4hIeoQJ5nyBhdABdH77UY2zi8=');
+        
+        // Set counters configuration for tests
+        $app['config']->set('counters.tables.table_name', 'counters');
+        $app['config']->set('counters.tables.table_pivot_name', 'counterables');
     }
 
     protected function setUpDatabase()

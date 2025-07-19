@@ -103,9 +103,11 @@ trait HasCounter
     {
         $counter = $this->getCounter($key);
 
-        $this->counters()->updateExistingPivot($this->getKey(), [
+        $this->counters()->updateExistingPivot($counter->getKey(), [
             'value' => $counter->pivot->value + ($step ?? $counter->step),
         ]);
+        // Refresh the relationship to get the latest pivot value
+        $this->load('counters');
     }
 
     /**

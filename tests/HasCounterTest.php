@@ -32,26 +32,24 @@ class HasCounterTest extends TestCase
     {
         $this->testModel->addCounter('number_of_downloads');
 
-        $this->assertDatabaseHas(config('counters.tables.table_name'), [
+        $this->assertDatabaseHas(config('counters.tables.table_pivot_name'), [
             'counterable_id' => $this->testModel->getKey(),
             'counterable_type' => $this->testModel->getMorphClass(),
             'counter_id' => $this->counter->getKey(),
             'value' => 0,
         ]);
-
     }
 
     public function test_can_model_add_counters(): void
     {
         $this->testModel->addCounter('number_of_downloads');
 
-        $this->assertDatabaseHas('counterables', [
+        $this->assertDatabaseHas(config('counters.tables.table_pivot_name'), [
             'counterable_id' => $this->testModel->getKey(),
             'counterable_type' => $this->testModel->getMorphClass(),
             'counter_id' => $this->counter->getKey(),
             'value' => 0,
         ]);
-
     }
 
     public function test_can_model_remove_counters(): void
@@ -66,14 +64,8 @@ class HasCounterTest extends TestCase
     public function test_can_model_increment_counters(): void
     {
         $this->testModel->addCounter('number_of_downloads');
-        //        for ($i = 0; $i < 10; $i++) {
-        //            $this->testModel->incrementCounter('number_of_downloads', 1);
-        //
-        //        }
-        $this->testModel->addCounter('number_of_downloads');
         $this->testModel->incrementCounter('number_of_downloads', 1);
         $this->testModel->incrementCounter('number_of_downloads', 1);
         $this->assertEquals(2, $this->testModel->getCounterValue('number_of_downloads'));
-
     }
 }
