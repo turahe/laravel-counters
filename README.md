@@ -1,4 +1,4 @@
-# Counters Management for laravel project.
+# Laravel Counters
 
 [![Latest Stable Version](http://poser.pugx.org/turahe/laravel-counters/v)](https://packagist.org/packages/turahe/laravel-counters) 
 [![Total Downloads](http://poser.pugx.org/turahe/laravel-counters/downloads)](https://packagist.org/packages/turahe/laravel-counters) 
@@ -8,48 +8,37 @@
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/turahe/laravel-counters/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/turahe/laravel-counters/?branch=master)
 [![PHP Composer](https://github.com/turahe/laravel-counters/actions/workflows/php.yml/badge.svg)](https://github.com/turahe/laravel-counters/actions/workflows/php.yml)
 
-* [Installation](#installation)
-  * [Requirements](#requirements)
-  * [Step-by-Step Installation](#step-by-step-installation)
-  * [Troubleshooting Installation](#troubleshooting-installation)
-* [Usage](#usage)
-  * [1) Using Counters with models](#1-using-counters-with-no-models)
-  * [2) Using Counters with no models](#2-using-counters-with-no-models)
-  * [3) Using artisan commands](#3-using-artisan-commands)
-* [Common Usage Patterns & Best Practices](#common-usage-patterns--best-practices)
-* [Database Seeding](#database-seeding)
+A flexible and powerful counter management system for Laravel applications. Easily track and manage various types of counters like page views, downloads, user actions, and more without cluttering your database schema.
 
-In some cases, you need to manage the state of the counters in your laravel project, like the number of visitors of your website,
-or number of view for a post, or number of downloads for a file, this needs to create a new table to save these records,
-or at least adding new column for your tables to save the count value.  
-Therefore, with this package, you can create as many counters for your model without needing to create a physical column in your model's table.
-Moreover, you can store public counters like "number_of_downloads" for your website, without needing to create a whole table to store it.
+## 🚀 Features
 
+- **Model-specific counters**: Associate counters with any Eloquent model
+- **Global counters**: System-wide counters for general statistics
+- **Cookie-based tracking**: Prevent duplicate increments from the same user
+- **Flexible configuration**: Customizable table names and settings
+- **Artisan commands**: Create counters via command line
+- **Laravel 10-12 support**: Compatible with modern Laravel versions
+- **PHP 8.2+ support**: Built for modern PHP applications
 
+## 📋 Table of Contents
 
-
-In summary, this package allows you to manage counters in your laravel project.
-
-Once installed you can do stuff like this:
-
-```php
-
-//increment/decrement system counters
-Counters::increment('number_of_downloads'); 
-
-// increment/decrement model objects counters
-$post->incrementCounter('number_of_views');
-$feature->decrementCounter('number_of_bugs');
-$user->decrementCounter('balance', 2); // decrement the balance of the user by 2
-```
-There are many other methods that are mentioned below.
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Usage](#usage)
+  - [Model Counters](#model-counters)
+  - [Global Counters](#global-counters)
+  - [Cookie-based Tracking](#cookie-based-tracking)
+- [API Reference](#api-reference)
+- [Configuration](#configuration)
+- [Testing](#testing)
+- [Contributing](#contributing)
 
 ## Installation
 
 ### Requirements
 
-- Laravel 5.4 or higher
-- PHP 7.0 or higher
+- **PHP**: 8.2 or higher
+- **Laravel**: 10.x, 11.x, or 12.x
 
 ### Step-by-Step Installation
 
@@ -59,19 +48,7 @@ There are many other methods that are mentioned below.
 composer require turahe/laravel-counters
 ```
 
-2. **Service Provider Registration:**
-
-In Laravel 5.5 and higher versions, the service provider will automatically get registered. In older versions of the framework, manually add the service provider in `config/app.php` file:
-
-```php
-'providers' => [
-    // ...
-    Turahe\Counters\CountersServiceProvider::class,
-    //...
-];
-```
-
-3. **Publish the configuration and migrations:**
+2. **Publish the configuration and migrations:**
 
 ```bash
 php artisan vendor:publish --provider="Turahe\Counters\CountersServiceProvider"
@@ -81,183 +58,240 @@ This will publish:
 - Configuration file: `config/counter.php`
 - Migration file: `database/migrations/xxxx_xx_xx_xxxxxx_create_counters_tables.php`
 
-**Alternative publishing options:**
-```bash
-# Publish only configuration
-php artisan vendor:publish --provider="Turahe\Counters\CountersServiceProvider" --tag=config
-
-# Publish only migrations
-php artisan vendor:publish --provider="Turahe\Counters\CountersServiceProvider" --tag=migrations
-```
-
-4. **Run the migrations:**
+3. **Run the migrations:**
 
 ```bash
 php artisan migrate
 ```
 
-This will create the `counters` and `counterables` tables in your database.
+This creates the `counters` and `counterables` tables in your database.
 
-### Troubleshooting Installation
+## Quick Start
 
-**Issue: "Can't locate path" error when publishing**
-If you encounter an error like `Can't locate path: <vendor/turahe/laravel-counters/src/../database/migrations/...>`, this typically means:
+### 1. Create a Counter
 
-- Make sure you have the latest version of the package
-- Try clearing your cache: `php artisan config:clear && php artisan cache:clear`
-- Re-run the publish command
+```php
+use Turahe\Counters\Models\Counter;
 
-**Issue: Migration already exists**
-If you get a "migration already exists" error:
-```bash
-# Check existing migrations
-php artisan migrate:status
-
-# If the counters tables don't exist, run:
-php artisan migrate --force
+// Create a counter for page views
+Counter::create([
+    'key' => 'page_views',
+    'name' => 'Page Views',
+    'initial_value' => 0,
+    'step' => 1
+]);
 ```
 
+### 2. Use with Models
 
-## Usage
-
-### 1) Using Counters with no models
-First, add the `Turahe\Counters\Traits\HasCounter` trait to your  model(s):
-for example we can add it to Post Model
 ```php
 use Turahe\Counters\Traits\HasCounter;
 
 class Post extends Model
 {
     use HasCounter;
-
-    // ...
+    
+    // Your model code...
 }
 ```
 
-This package allows the posts to be associated with counters. Every post can associated with multiple counters.
+### 3. Track Views
 
-
-We can create a counter like this, for example, lets create a counter for the number of views for the Post Model.
 ```php
-use Turahe\Counters\Models\Counter;
-
-$counter = Counter([
-            'key' => 'number_of_views',
-            'name' => 'Views',
-            'initial_value' => 0 //(could be left empty, default value is 0)
-            'step' => 1 // (could be left empty, default value is 1)
-        ]);
-```
-
-
-After that, for example, in the show function of post controller, you can add this line:
-```php
-class PostsController extends Controller
+// In your controller
+public function show(Post $post)
 {
-    public function show(Post $post)
-    {
-        //...
-        $post->incrementCounter('number_of_views');
-        //...
-    }
+    $post->incrementCounter('page_views');
+    
+    return view('posts.show', compact('post'));
 }
 ```
-By doing this, the counter of number_of_views for every post will be incremented [by the step size] as we show the post.
 
-This package has another functions.
+### 4. Global Counters
+
 ```php
-// will return the counter object
-$post->getCounter($key); 
+use Turahe\Counters\Facades\Counters;
 
-// will return the counter value
-$post->getCounterValue($key);
-
-//will add record in counterable table for this post object
-$post->addCounter($key);
-
-//will remove the record from counterable table for this post object.
-$post->removeCounter($key);
-
-//increment the counter with the given $key
-//Note that this will create record in counterable table,if it's not exist
-//if $step is entered, it will increment with the value of $step
-$post->incrementCounter($key, $step = null);
-
-//decrement the counter with the given $key
-//Note that this will create record in counterable table,if it's not exist
-//if $step is entered, it will decrement with the value of $step
-$post->decrementCounter($key, $step = null);
-
- // will reset the counter value (to initial_value) for the post object.
-$post->resetCounter($key);
+// Track total downloads
+Counters::increment('total_downloads');
 ```
 
+## Usage
 
-### 2) Using Counters with no models.
-Sometimes, you have general counters that are not associated with any models, for example the number visitor for your website.
+### Model Counters
 
-Therefore, this package will allow you to deal with Counter with these types.
+Add the `HasCounter` trait to any model you want to track:
 
 ```php
+use Turahe\Counters\Traits\HasCounter;
 
-use Turahe\Counters\Facades\Counters; 
-class Test 
+class Post extends Model
 {
-    public function incrementFunction()
-    {
-        //moreover, you can add this function in your public page to be incremented 
-        //every time user hits your website
-        Counters::increment('number_of_downloads');
-    }
+    use HasCounter;
+    
+    // Your model code...
 }
 ```
 
-This Facade has many other functions:
+#### Available Methods
 
 ```php
-// will return the counter object
-Counters::get($key); 
+// Add a counter to a model
+$post->addCounter('views');
 
-// will return the counter value
-Counters::getValue($key, $default = null); 
+// Get counter value
+$views = $post->getCounterValue('views');
 
-// set the value of the counter
-Counters::setValue($key, $value);
+// Increment counter
+$post->incrementCounter('views');
 
-//set the step of the counter
-Counters::setStep($key, $step);
+// Decrement counter
+$post->decrementCounter('views', 2); // Decrement by 2
 
-//increment the counter with the given $key
-Counters::increment($key, $step = null);
+// Reset counter to initial value
+$post->resetCounter('views');
 
-//decrement the counter with the given $key
-Counters::decrement($key, $step = null);
+// Remove counter from model
+$post->removeCounter('views');
 
- // will reset the counter for the initial_value
-Counters::reset($key);
+// Check if model has counter
+if ($post->hasCounter('views')) {
+    // Do something
+}
 ```
 
-In some cases, you want to increment the counter once for every person, for example no need to increment the number_of_downloads counter every time the same user refreshes the page.
+### Global Counters
 
-So you can use these functions:
+Use the `Counters` facade for system-wide counters:
 
 ```php
-Counters::incrementIfNotHasCookies($key);
-Counters::decrementIfNotHasCookies($key);
+use Turahe\Counters\Facades\Counters;
+
+// Create a counter
+Counters::create('total_downloads', 'Total Downloads', 0, 1);
+
+// Get counter value
+$downloads = Counters::getValue('total_downloads');
+
+// Increment counter
+Counters::increment('total_downloads');
+
+// Decrement counter
+Counters::decrement('total_downloads', 2);
+
+// Set specific value
+Counters::setValue('total_downloads', 100);
+
+// Reset to initial value
+Counters::reset('total_downloads');
 ```
 
+### Cookie-based Tracking
 
-### 3) Using artisan commands
+Prevent duplicate increments from the same user:
 
-You can create a Counter from a console with artisan commands.
-The following command creates the counter number_of_downloads with initial value 0 and step 1
+```php
+// Only increment if user doesn't have cookie
+Counters::incrementIfNotHasCookies('daily_visitors');
+Counters::decrementIfNotHasCookies('available_slots');
+```
+
+## API Reference
+
+### Model Methods (HasCounter Trait)
+
+| Method | Description | Parameters |
+|--------|-------------|------------|
+| `addCounter($key, $initialValue = null)` | Add counter to model | `$key`: Counter key, `$initialValue`: Optional initial value |
+| `getCounter($key)` | Get counter object | `$key`: Counter key |
+| `getCounterValue($key)` | Get counter value | `$key`: Counter key |
+| `hasCounter($key)` | Check if model has counter | `$key`: Counter key |
+| `incrementCounter($key, $step = null)` | Increment counter | `$key`: Counter key, `$step`: Optional step value |
+| `decrementCounter($key, $step = null)` | Decrement counter | `$key`: Counter key, `$step`: Optional step value |
+| `resetCounter($key, $initialValue = null)` | Reset counter | `$key`: Counter key, `$initialValue`: Optional reset value |
+| `removeCounter($key)` | Remove counter from model | `$key`: Counter key |
+
+### Global Counter Methods (Counters Facade)
+
+| Method | Description | Parameters |
+|--------|-------------|------------|
+| `create($key, $name, $initialValue = 0, $step = 1)` | Create a counter | `$key`: Counter key, `$name`: Display name, `$initialValue`: Initial value, `$step`: Step value |
+| `get($key)` | Get counter object | `$key`: Counter key |
+| `getValue($key, $default = null)` | Get counter value | `$key`: Counter key, `$default`: Default value if not found |
+| `setValue($key, $value)` | Set counter value | `$key`: Counter key, `$value`: New value |
+| `setStep($key, $step)` | Set counter step | `$key`: Counter key, `$step`: Step value |
+| `increment($key, $step = null)` | Increment counter | `$key`: Counter key, `$step`: Optional step value |
+| `decrement($key, $step = null)` | Decrement counter | `$key`: Counter key, `$step`: Optional step value |
+| `reset($key)` | Reset counter | `$key`: Counter key |
+| `incrementIfNotHasCookies($key)` | Increment if no cookie | `$key`: Counter key |
+| `decrementIfNotHasCookies($key)` | Decrement if no cookie | `$key`: Counter key |
+
+## Configuration
+
+The package configuration is located at `config/counter.php`:
+
+```php
+return [
+    'models' => [
+        'counter' => Turahe\Counters\Models\Counter::class,
+    ],
+
+    'tables' => [
+        'table_name' => 'counters',
+        'table_pivot_name' => 'counterables',
+    ],
+    
+    'database_connection' => env('COUNTER_DB_CONNECTION'),
+];
+```
+
+### Customizing Table Names
+
+You can customize the table names in the configuration:
+
+```php
+'tables' => [
+    'table_name' => 'my_counters',
+    'table_pivot_name' => 'my_counterables',
+],
+```
+
+## Artisan Commands
+
+### Create Counter
+
+Create a counter via command line:
+
 ```bash
-php artisan make:counter number_of_downloads Visitors 0 1
+php artisan make:counter page_views "Page Views" 0 1
 ```
 
-## Common Usage Patterns & Best Practices
+Parameters:
+- `page_views`: Counter key
+- `"Page Views"`: Display name
+- `0`: Initial value
+- `1`: Step value
 
-### ✅ DO's
+## Testing
+
+The package includes comprehensive tests. Run them with:
+
+```bash
+./vendor/bin/phpunit
+```
+
+### Test Coverage
+
+- ✅ Model counter operations
+- ✅ Global counter operations
+- ✅ Cookie-based tracking
+- ✅ Exception handling
+- ✅ Database operations
+- ✅ Configuration flexibility
+
+## Common Usage Patterns
+
+### ✅ Best Practices
 
 1. **Always create counters before using them:**
 ```php
@@ -281,26 +315,22 @@ $user->incrementCounter('login_count');
 
 // Avoid generic names
 $post->incrementCounter('count');
-$user->incrementCounter('number');
 ```
 
 3. **Handle counter existence gracefully:**
 ```php
-// Check if counter exists before using
-if ($post->getCounter('views')) {
+if ($post->hasCounter('views')) {
     $post->incrementCounter('views');
 } else {
-    // Create counter first or handle the case
     $post->addCounter('views');
     $post->incrementCounter('views');
 }
 ```
 
-### ❌ Common Mistakes to Avoid
+### ❌ Common Mistakes
 
-1. **Don't forget to run migrations after publishing:**
+1. **Don't forget to run migrations:**
 ```bash
-# After publishing, always run:
 php artisan migrate
 ```
 
@@ -310,78 +340,65 @@ php artisan migrate
 $post->incrementCounter('undefined_counter');
 
 // Better approach
-$post->addCounter('new_counter');  // Create association first
+$post->addCounter('new_counter');
 $post->incrementCounter('new_counter');
-```
-
-3. **Don't mix up model counters with global counters:**
-```php
-// For model-specific counters
-$post->incrementCounter('views');
-
-// For global/system counters
-Counters::increment('total_downloads');
-```
-
-### Performance Tips
-
-1. **Batch counter operations when possible:**
-```php
-// Instead of multiple individual increments
-foreach ($posts as $post) {
-    $post->incrementCounter('batch_processed');
-}
-
-// Consider using database transactions for consistency
-DB::transaction(function () use ($posts) {
-    foreach ($posts as $post) {
-        $post->incrementCounter('batch_processed');
-    }
-});
-```
-
-2. **Use cookie-based increments for user-specific actions:**
-```php
-// Prevents multiple increments from same user
-Counters::incrementIfNotHasCookies('daily_visitors');
 ```
 
 ## Database Seeding
 
-Here's a sample seeder.
+Example seeder for creating counters:
 
 ```php
-    use Illuminate\Database\Seeder;
-    use Turahe\Counters\Facades\Counters;
+use Illuminate\Database\Seeder;
+use Turahe\Counters\Models\Counter;
 
-    class CounterTableSeeder extends Seeder
+class CounterSeeder extends Seeder
+{
+    public function run()
     {
-        public function run()
-        {
+        // Create global counters
+        Counter::create([
+            'key' => 'total_downloads',
+            'name' => 'Total Downloads',
+            'initial_value' => 0,
+            'step' => 1
+        ]);
 
-            // create Counters
-            //This will create a counter with initial value as 3, and every increment 5 will be added.
-            Counter::create([
-                'key' => 'number_of_downloads',
-                'name' => 'Visitors',
-                'initial_value' => 3,
-                'step' => 5
-            ]);
-            //This counter will have 0 as initial_value and 1 as step
-            Counter::create([
-                'key' => 'number_of_downloads2',
-                'name' => 'Visitors2'
-            ]);
+        Counter::create([
+            'key' => 'daily_visitors',
+            'name' => 'Daily Visitors',
+            'initial_value' => 0,
+            'step' => 1
+        ]);
 
-            $viewCounter = Counter::create([
-                'key' => 'number_of_views',
-                'name' => 'Views'
-            ]);
-            
-            $post = Post::find(1);
-            $post->addCounter('number_of_views');// to add the record to counterable table
-            
-            
-        }
+        // Create model-specific counters
+        Counter::create([
+            'key' => 'page_views',
+            'name' => 'Page Views',
+            'initial_value' => 0,
+            'step' => 1
+        ]);
     }
+}
 ```
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This package is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Support
+
+- **Issues**: [GitHub Issues](https://github.com/turahe/laravel-counters/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/turahe/laravel-counters/discussions)
+
+---
+
+Made with ❤️ by [Nur Wachid](https://www.wach.id)
