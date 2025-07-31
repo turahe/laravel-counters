@@ -9,10 +9,14 @@
 [![PHP Composer](https://github.com/turahe/laravel-counters/actions/workflows/php.yml/badge.svg)](https://github.com/turahe/laravel-counters/actions/workflows/php.yml)
 
 * [Installation](#installation)
+  * [Requirements](#requirements)
+  * [Step-by-Step Installation](#step-by-step-installation)
+  * [Troubleshooting Installation](#troubleshooting-installation)
 * [Usage](#usage)
-  * [1) Using Counters Associated with model](#1-using-counters-with-no-models)
+  * [1) Using Counters with models](#1-using-counters-with-no-models)
   * [2) Using Counters with no models](#2-using-counters-with-no-models)
   * [3) Using artisan commands](#3-using-artisan-commands)
+* [Common Usage Patterns & Best Practices](#common-usage-patterns--best-practices)
 * [Database Seeding](#database-seeding)
 
 In some cases, you need to manage the state of the counters in your laravel project, like the number of visitors of your website,
@@ -42,16 +46,22 @@ There are many other methods that are mentioned below.
 
 ## Installation
 
+### Requirements
 
-### Laravel
+- Laravel 5.4 or higher
+- PHP 7.0 or higher
 
-This package can be used in Laravel 5.4 or higher. If you are using an older version of Laravel You can install the package via composer:
+### Step-by-Step Installation
 
-``` bash
+1. **Install the package via Composer:**
+
+```bash
 composer require turahe/laravel-counters
 ```
 
-In Laravel 5.5 and higher versions, the service provider will automatically get registered. In older versions of the framework just add the service provider in `config/app.php` file:
+2. **Service Provider Registration:**
+
+In Laravel 5.5 and higher versions, the service provider will automatically get registered. In older versions of the framework, manually add the service provider in `config/app.php` file:
 
 ```php
 'providers' => [
@@ -61,16 +71,50 @@ In Laravel 5.5 and higher versions, the service provider will automatically get 
 ];
 ```
 
-You must publish [the migration](https://github.com/turahe/laravel-counters/tree/master/database/migrations) with:
+3. **Publish the configuration and migrations:**
 
 ```bash
 php artisan vendor:publish --provider="Turahe\Counters\CountersServiceProvider"
 ```
 
-After the migration has been published you can create the tables by running the migrations:
+This will publish:
+- Configuration file: `config/counter.php`
+- Migration file: `database/migrations/xxxx_xx_xx_xxxxxx_create_counters_tables.php`
+
+**Alternative publishing options:**
+```bash
+# Publish only configuration
+php artisan vendor:publish --provider="Turahe\Counters\CountersServiceProvider" --tag=config
+
+# Publish only migrations
+php artisan vendor:publish --provider="Turahe\Counters\CountersServiceProvider" --tag=migrations
+```
+
+4. **Run the migrations:**
 
 ```bash
 php artisan migrate
+```
+
+This will create the `counters` and `counterables` tables in your database.
+
+### Troubleshooting Installation
+
+**Issue: "Can't locate path" error when publishing**
+If you encounter an error like `Can't locate path: <vendor/turahe/laravel-counters/src/../database/migrations/...>`, this typically means:
+
+- Make sure you have the latest version of the package
+- Try clearing your cache: `php artisan config:clear && php artisan cache:clear`
+- Re-run the publish command
+
+**Issue: Migration already exists**
+If you get a "migration already exists" error:
+```bash
+# Check existing migrations
+php artisan migrate:status
+
+# If the counters tables don't exist, run:
+php artisan migrate --force
 ```
 
 
@@ -203,12 +247,103 @@ Counters::decrementIfNotHasCookies($key);
 ```
 
 
-## 3) Using artisan commands
+### 3) Using artisan commands
 
 You can create a Counter from a console with artisan commands.
 The following command creates the counter number_of_downloads with initial value 0 and step 1
 ```bash
 php artisan make:counter number_of_downloads Visitors 0 1
+```
+
+## Common Usage Patterns & Best Practices
+
+### ✅ DO's
+
+1. **Always create counters before using them:**
+```php
+// Create the counter first
+Counter::create([
+    'key' => 'page_views',
+    'name' => 'Page Views',
+    'initial_value' => 0,
+    'step' => 1
+]);
+
+// Then use it
+$post->incrementCounter('page_views');
+```
+
+2. **Use meaningful counter keys:**
+```php
+// Good
+$post->incrementCounter('article_views');
+$user->incrementCounter('login_count');
+
+// Avoid generic names
+$post->incrementCounter('count');
+$user->incrementCounter('number');
+```
+
+3. **Handle counter existence gracefully:**
+```php
+// Check if counter exists before using
+if ($post->getCounter('views')) {
+    $post->incrementCounter('views');
+} else {
+    // Create counter first or handle the case
+    $post->addCounter('views');
+    $post->incrementCounter('views');
+}
+```
+
+### ❌ Common Mistakes to Avoid
+
+1. **Don't forget to run migrations after publishing:**
+```bash
+# After publishing, always run:
+php artisan migrate
+```
+
+2. **Don't use counters without creating them first:**
+```php
+// This might fail if counter doesn't exist
+$post->incrementCounter('undefined_counter');
+
+// Better approach
+$post->addCounter('new_counter');  // Create association first
+$post->incrementCounter('new_counter');
+```
+
+3. **Don't mix up model counters with global counters:**
+```php
+// For model-specific counters
+$post->incrementCounter('views');
+
+// For global/system counters
+Counters::increment('total_downloads');
+```
+
+### Performance Tips
+
+1. **Batch counter operations when possible:**
+```php
+// Instead of multiple individual increments
+foreach ($posts as $post) {
+    $post->incrementCounter('batch_processed');
+}
+
+// Consider using database transactions for consistency
+DB::transaction(function () use ($posts) {
+    foreach ($posts as $post) {
+        $post->incrementCounter('batch_processed');
+    }
+});
+```
+
+2. **Use cookie-based increments for user-specific actions:**
+```php
+// Prevents multiple increments from same user
+Counters::incrementIfNotHasCookies('daily_visitors');
 ```
 
 ## Database Seeding
