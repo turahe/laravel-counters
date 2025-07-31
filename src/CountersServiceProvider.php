@@ -18,6 +18,10 @@ class CountersServiceProvider extends ServiceProvider
             __DIR__.'/../config/counter.php' => $this->app->configPath('counter.php'),
         ], 'config');
 
+        $this->publishes([
+            __DIR__.'/../database/migrations/' => database_path('migrations'),
+        ], 'migrations');
+
         if ($this->app instanceof \Illuminate\Foundation\Application) {
             $databasePath = __DIR__.'/../database/migrations';
             $this->loadMigrationsFrom($databasePath);
