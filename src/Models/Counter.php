@@ -68,7 +68,7 @@ class Counter extends Model
     public function counterable(): MorphToMany
     {
         return $this->morphedByMany(
-            related: config('counter.models.counterable', Counterable::class),
+            related: \Illuminate\Database\Eloquent\Model::class,
             name: 'counterable',
             table: config('counter.tables.table_pivot_name', 'counterables')
         )->withPivot('value')

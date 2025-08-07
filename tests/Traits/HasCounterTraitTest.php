@@ -89,6 +89,9 @@ class HasCounterTraitTest extends TestCase
     public function test_get_counter_value_returns_zero_when_not_exists()
     {
         $post = Post::create(['name' => 'Test Post']);
+        
+        // Create the counter but don't attach it to the post
+        Counter::create(['key' => 'non_existent', 'name' => 'Non Existent']);
 
         $this->assertEquals(0, $post->getCounterValue('non_existent'));
     }

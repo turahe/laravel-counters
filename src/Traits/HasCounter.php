@@ -258,7 +258,7 @@ trait HasCounter
      */
     public function getTotalCounterValue(): int
     {
-        return $this->counters()->sum('value');
+        return $this->counters()->sum('counterables.value');
     }
 
     /**
@@ -266,7 +266,7 @@ trait HasCounter
      */
     public function getAverageCounterValue(): float
     {
-        return $this->counters()->avg('value') ?? 0.0;
+        return $this->counters()->avg('counterables.value') ?? 0.0;
     }
 
     /**

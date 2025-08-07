@@ -443,4 +443,3 @@ This package is open-sourced software licensed under the [MIT license](https://o
 ---
 
 Made with ❤️ by [Nur Wachid](https://www.wach.id)
->>>>>>> 3c192a0ae39c080fb4095d4f9d67ef68fe6c8b74
