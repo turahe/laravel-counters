@@ -1,11 +1,74 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for all configuration options:
-# https://help.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
+# Dependabot configuration for Laravel Counters package
+# Focused on PHP 8.4 and Laravel 11/12 compatibility
 
 version: 2
 updates:
-  - package-ecosystem: "composer" # See documentation for possible values
-    directory: "/" # Location of package manifests
+  # Composer dependencies
+  - package-ecosystem: "composer"
+    directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "turahe"
+    assignees:
+      - "turahe"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "php"
+      - "laravel"
+    ignore:
+      # Ignore major version updates that might break compatibility
+      - dependency-name: "php"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "laravel/framework"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "orchestra/testbench"
+        update-types: ["version-update:semver-major"]
+    # Allow updates for security patches and minor versions
+    allow:
+      # Allow security updates
+      - dependency-type: "direct"
+        update-types: ["security"]
+      # Allow minor and patch updates for development dependencies
+      - dependency-type: "indirect"
+        update-types: ["version-update:semver-minor", "version-update:semver-patch"]
+      # Allow patch updates for direct dependencies
+      - dependency-type: "direct"
+        update-types: ["version-update:semver-patch"]
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "turahe"
+    assignees:
+      - "turahe"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+
+  # Docker (if used)
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "turahe"
+    assignees:
+      - "turahe"
+    labels:
+      - "dependencies"
+      - "docker"

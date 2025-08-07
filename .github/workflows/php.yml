@@ -1,10 +1,10 @@
-name: PHP Composer
+name: PHP Tests & Quality
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main, master, develop ]
   pull_request:
-    branches: [ master ]
+    branches: [ main, master ]
 
 jobs:
   test:
@@ -12,32 +12,32 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: [8.2, 8.3, 8.4]
-        laravel: [10.*, 11.*, 12.*]
+        php: [8.3, 8.4]
+        laravel: [11.*, 12.*]
         exclude:
-          - php: 8.2
-            laravel: 12.*
           - php: 8.3
             laravel: 12.*
 
     name: PHP ${{ matrix.php }} - Laravel ${{ matrix.laravel }}
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
         php-version: ${{ matrix.php }}
-        extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite
-        coverage: none
+        extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, pdo_mysql
+        coverage: xdebug
+        tools: composer:v2
 
     - name: Validate composer.json and composer.lock
       run: composer validate --strict
 
     - name: Cache Composer packages
       id: composer-cache
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: vendor
         key: ${{ runner.os }}-php-${{ matrix.php }}-laravel-${{ matrix.laravel }}-${{ hashFiles('**/composer.lock') }}
@@ -47,7 +47,100 @@ jobs:
     - name: Install dependencies
       run: |
         composer require "laravel/framework:${{ matrix.laravel }}" --no-interaction --no-update
+        composer install --prefer-dist --no-progress --optimize-autoloader
+
+    - name: Run PHPStan (Static Analysis)
+      run: |
+        if [ -f "vendor/bin/phpstan" ]; then
+          ./vendor/bin/phpstan analyse --level=8 src/ tests/
+        fi
+
+    - name: Run PHP CS Fixer
+      run: |
+        if [ -f "vendor/bin/php-cs-fixer" ]; then
+          ./vendor/bin/php-cs-fixer fix --dry-run --diff
+        fi
+
+    - name: Run test suite with coverage
+      run: |
+        ./vendor/bin/phpunit --testdox --coverage-text --coverage-clover=coverage.xml
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+  lint:
+    runs-on: ubuntu-latest
+    name: Code Quality
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: 8.4
+        extensions: mbstring, xml, ctype, iconv, intl
+        tools: composer:v2
+
+    - name: Cache Composer packages
+      uses: actions/cache@v4
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-8.4-laravel-12.*-${{ hashFiles('**/composer.lock') }}
+
+    - name: Install dependencies
+      run: |
+        composer require "laravel/framework:^12.0" --no-interaction --no-update
         composer install --prefer-dist --no-progress
 
-    - name: Run test suite
-      run: ./vendor/bin/phpunit --testdox
+    - name: Run Laravel Pint
+      run: |
+        if [ -f "vendor/bin/pint" ]; then
+          ./vendor/bin/pint --test
+        fi
+
+    - name: Check for syntax errors
+      run: |
+        find src/ tests/ -name "*.php" -exec php -l {} \;
+
+  security:
+    runs-on: ubuntu-latest
+    name: Security Check
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: 8.4
+        extensions: mbstring, xml, ctype, iconv, intl
+        tools: composer:v2
+
+    - name: Cache Composer packages
+      uses: actions/cache@v4
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-8.4-security-${{ hashFiles('**/composer.lock') }}
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+
+    - name: Run Security Check
+      run: |
+        if [ -f "vendor/bin/security-checker" ]; then
+          ./vendor/bin/security-checker security:check composer.lock
+        fi
+
+    - name: Run PHPCS Security
+      run: |
+        if [ -f "vendor/bin/phpcs" ]; then
+          ./vendor/bin/phpcs --standard=Security src/ tests/
+        fi

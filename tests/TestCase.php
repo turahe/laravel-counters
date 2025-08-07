@@ -1,56 +1,56 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Turahe\Counters\Tests;
 
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
+use Orchestra\Testbench\TestCase as Orchestra;
+use Turahe\Counters\CountersServiceProvider;
 
-class TestCase extends \Orchestra\Testbench\TestCase
+/**
+ * Optimized TestCase for PHP 8.4 and Laravel 11/12.
+ */
+abstract class TestCase extends Orchestra
 {
     use RefreshDatabase;
-    use WithFaker;
 
-    protected function setUp(): void
+    /**
+     * Get package providers.
+     */
+    protected function getPackageProviders($app): array
     {
-        parent::setUp();
-
-        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
-        $this->setUpDatabase();
+        return [
+            CountersServiceProvider::class,
+        ];
     }
 
     /**
-     * {@inheritdoc}
+     * Define environment setup.
      */
-    protected function getPackageProviders($app)
+    protected function defineEnvironment($app): void
     {
-        return [\Turahe\Counters\CountersServiceProvider::class];
-    }
-
-    /**
-     * @param  \Illuminate\Foundation\Application  $app
-     */
-    protected function getEnvironmentSetUp($app)
-    {
-        $app['config']->set('database.default', 'sqlite');
-        $app['config']->set('database.connections.sqlite', [
-            'driver' => 'sqlite',
+        // Setup default database to use sqlite :memory:
+        $app['config']->set('database.default', 'testbench');
+        $app['config']->set('database.connections.testbench', [
+            'driver'   => 'sqlite',
             'database' => ':memory:',
-            'prefix' => '',
+            'prefix'   => '',
         ]);
-        $app['config']->set('app.key', 'base64:MFOsOH9RomiI2LRdgP4hIeoQJ5nyBhdABdH77UY2zi8=');
-        
-        // Set counters configuration for tests
-        $app['config']->set('counters.tables.table_name', 'counters');
-        $app['config']->set('counters.tables.table_pivot_name', 'counterables');
+
+        // Setup counter configuration
+        $app['config']->set('counter.cache.enabled', false);
+        $app['config']->set('counter.tables.table_name', 'counters');
+        $app['config']->set('counter.tables.table_pivot_name', 'counterables');
     }
 
-    protected function setUpDatabase()
+    /**
+     * Get package aliases.
+     */
+    protected function getPackageAliases($app): array
     {
-        $this->app['db']->connection()->getSchemaBuilder()->create('posts', function (Blueprint $table) {
-            $table->increments('id');
-            $table->string('name');
-            $table->timestamps();
-        });
+        return [
+            'Counters' => \Turahe\Counters\Facades\Counters::class,
+        ];
     }
 }

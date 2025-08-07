@@ -1,57 +1,88 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Turahe\Counters\Commands;
 
 use Illuminate\Console\Command;
-use Turahe\Counters\Models\Counter;
+use Turahe\Counters\Classes\Counters;
+use Turahe\Counters\Exceptions\CounterAlreadyExists;
 
+/**
+ * Optimized MakeCounter command for PHP 8.4 and Laravel 11/12.
+ */
 class MakeCounter extends Command
 {
     /**
      * The name and signature of the console command.
-     *
-     * @var string
      */
-    protected $signature = 'make:counter {key} {name} {initial_value=0} {step=1}';
+    protected $signature = 'make:counter 
+        {key : The unique key for the counter}
+        {name : The display name for the counter}
+        {--initial-value=0 : The initial value for the counter}
+        {--step=1 : The step value for increment/decrement operations}
+        {--notes= : Optional notes for the counter}';
 
     /**
      * The console command description.
-     *
-     * @var string
      */
-    protected $description = 'Creates a new Counter';
-
-    /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        parent::__construct();
-    }
+    protected $description = 'Create a new counter with the specified parameters';
 
     /**
      * Execute the console command.
-     *
-     * @return mixed
      */
-    public function handle()
+    public function handle(Counters $counters): int
     {
-        $this->line('[Counters] Creating the counter...');
+        $this->info('Creating counter...');
 
-        $key = $this->argument('key');
-        $name = $this->argument('name');
-        $initial_value = $this->argument('initial_value');
-        $step = $this->argument('step');
+        try {
+            $key = $this->argument('key');
+            $name = $this->argument('name');
+            $initialValue = (int) $this->option('initial-value');
+            $step = (int) $this->option('step');
+            $notes = $this->option('notes');
 
-        $value = $initial_value;
+            // Validate inputs
+            if (empty($key)) {
+                $this->error('Counter key is required.');
+                return self::FAILURE;
+            }
 
-        Counter::query()->create(
-            compact('key', 'name', 'initial_value', 'step', 'value')
-        );
+            if (empty($name)) {
+                $this->error('Counter name is required.');
+                return self::FAILURE;
+            }
 
-        $this->info("[Counters] Counter $key created Successfully");
+            // Create the counter
+            $counter = $counters->create(
+                key: $key,
+                name: $name,
+                initialValue: $initialValue,
+                step: $step,
+                notes: $notes
+            );
 
+            $this->info("✅ Counter '{$key}' created successfully!");
+            $this->table(
+                ['Property', 'Value'],
+                [
+                    ['Key', $counter->key],
+                    ['Name', $counter->name],
+                    ['Initial Value', $counter->initial_value],
+                    ['Current Value', $counter->value],
+                    ['Step', $counter->step],
+                    ['Notes', $counter->notes ?? 'N/A'],
+                    ['Created At', $counter->created_at->format('Y-m-d H:i:s')],
+                ]
+            );
+
+            return self::SUCCESS;
+        } catch (CounterAlreadyExists $e) {
+            $this->error("❌ Counter '{$key}' already exists!");
+            return self::FAILURE;
+        } catch (\Exception $e) {
+            $this->error("❌ Failed to create counter: {$e->getMessage()}");
+            return self::FAILURE;
+        }
     }
 }

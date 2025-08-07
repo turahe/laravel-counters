@@ -32,7 +32,7 @@ class HasCounterTest extends TestCase
     {
         $this->testModel->addCounter('number_of_downloads');
 
-        $this->assertDatabaseHas(config('counters.tables.table_pivot_name'), [
+        $this->assertDatabaseHas(config('counter.tables.table_pivot_name'), [
             'counterable_id' => $this->testModel->getKey(),
             'counterable_type' => $this->testModel->getMorphClass(),
             'counter_id' => $this->counter->getKey(),
@@ -44,7 +44,7 @@ class HasCounterTest extends TestCase
     {
         $this->testModel->addCounter('number_of_downloads');
 
-        $this->assertDatabaseHas(config('counters.tables.table_pivot_name'), [
+        $this->assertDatabaseHas(config('counter.tables.table_pivot_name'), [
             'counterable_id' => $this->testModel->getKey(),
             'counterable_type' => $this->testModel->getMorphClass(),
             'counter_id' => $this->counter->getKey(),

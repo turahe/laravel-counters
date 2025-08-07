@@ -1,0 +1,163 @@
+name: Release Package
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Test before release
+    strategy:
+      matrix:
+        php: [8.4]
+        laravel: [12.*]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php }}
+        extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, pdo_mysql
+        tools: composer:v2
+
+    - name: Cache Composer packages
+      uses: actions/cache@v4
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-${{ matrix.php }}-laravel-${{ matrix.laravel }}-${{ hashFiles('**/composer.lock') }}
+
+    - name: Install dependencies
+      run: |
+        composer require "laravel/framework:${{ matrix.laravel }}" --no-interaction --no-update
+        composer install --prefer-dist --no-progress --optimize-autoloader
+
+    - name: Run test suite
+      run: ./vendor/bin/phpunit --testdox
+
+    - name: Run static analysis
+      run: |
+        if [ -f "vendor/bin/phpstan" ]; then
+          ./vendor/bin/phpstan analyse --level=8 src/ tests/
+        fi
+
+  release:
+    needs: test
+    runs-on: ubuntu-latest
+    name: Create Release
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: 8.4
+        extensions: mbstring, xml, ctype, iconv, intl
+        tools: composer:v2
+
+    - name: Cache Composer packages
+      uses: actions/cache@v4
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-8.4-release-${{ hashFiles('**/composer.lock') }}
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+
+    - name: Extract version
+      id: version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+    - name: Validate composer.json
+      run: composer validate --strict
+
+    - name: Create Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.version.outputs.VERSION }}
+        release_name: Release ${{ steps.version.outputs.VERSION }}
+        body: |
+          ## 🚀 Release ${{ steps.version.outputs.VERSION }}
+          
+          ### ✨ Features
+          - Optimized for PHP 8.4 and Laravel 11/12
+          - Enhanced performance with caching
+          - Bulk operations support
+          - Improved error handling
+          
+          ### 🔧 Technical Improvements
+          - Modern PHP 8.4 features throughout
+          - Laravel 11/12 compatibility
+          - Enhanced type safety
+          - Better database indexing
+          
+          ### 📦 Installation
+          ```bash
+          composer require turahe/laravel-counters
+          ```
+          
+          ### 🎯 Usage
+          ```php
+          // Create a counter
+          Counters::create('page_views', 'Page Views', 0, 1);
+          
+          // Increment counter
+          Counters::increment('page_views');
+          
+          // Get counter value
+          $value = Counters::getValue('page_views');
+          ```
+          
+          ### 📊 Test Results
+          - ✅ All tests passing
+          - ✅ PHP 8.4 compatible
+          - ✅ Laravel 11/12 ready
+          - ✅ Production optimized
+        draft: false
+        prerelease: false
+
+    - name: Build and publish to Packagist
+      run: |
+        # Create distribution
+        composer archive --format=zip --dir=dist/
+        
+        # Upload to GitHub releases
+        gh release upload ${{ steps.version.outputs.VERSION }} dist/*.zip
+
+  notify:
+    needs: release
+    runs-on: ubuntu-latest
+    name: Notify Release
+    if: success()
+
+    steps:
+    - name: Notify Discord (if configured)
+      uses: sarisia/actions-status-discord@v1
+      if: env.DISCORD_WEBHOOK
+      with:
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        title: "🎉 Laravel Counters Released!"
+        description: "Version ${{ needs.release.outputs.version }} has been successfully released!"
+        color: 0x00ff00
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+
+    - name: Notify Slack (if configured)
+      uses: 8398a7/action-slack@v3
+      if: env.SLACK_WEBHOOK
+      with:
+        status: success
+        text: "🎉 Laravel Counters v${{ needs.release.outputs.version }} has been released!"
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

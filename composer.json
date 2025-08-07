@@ -20,12 +20,15 @@
   ],
   "homepage": "https://github.com/turahe/laravel-counters",
   "require": {
-    "php": "^8.2"
+    "php": "^8.4",
+    "illuminate/support": "^11.0 || ^12.0",
+    "illuminate/database": "^11.0 || ^12.0"
   },
   "require-dev": {
-    "laravel/framework": "^10.0 || ^11.0 || ^12.0",
+    "laravel/framework": "^11.0 || ^12.0",
     "laravel/pint": "^1.17",
-    "orchestra/testbench": "^8.0 || ^9.0 || ^10.0 || ^11.0"
+    "orchestra/testbench": "^9.0 || ^10.0 || ^11.0",
+    "phpunit/phpunit": "^10.0"
   },
   "minimum-stability": "stable",
   "prefer-stable": true,
@@ -41,7 +44,11 @@
   },
   "config": {
     "preferred-install": "dist",
-    "sort-packages": true
+    "sort-packages": true,
+    "allow-plugins": {
+      "pestphp/pest-plugin": true,
+      "php-http/discovery": true
+    }
   },
   "extra": {
     "aliases": {
@@ -52,5 +59,11 @@
         "Turahe\\Counters\\CountersServiceProvider"
       ]
     }
+  },
+  "scripts": {
+    "test": "vendor/bin/phpunit",
+    "test-coverage": "vendor/bin/phpunit --coverage-html coverage",
+    "pint": "vendor/bin/pint",
+    "pint-fix": "vendor/bin/pint --test"
   }
 }

@@ -1,165 +1,315 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Turahe\Counters\Classes;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Cookie;
 use Turahe\Counters\Exceptions\CounterAlreadyExists;
 use Turahe\Counters\Exceptions\CounterDoesNotExist;
 use Turahe\Counters\Models\Counter;
 
 /**
- * Class Counters.
+ * Optimized Counters class for PHP 8.4 and Laravel 11/12.
  */
-class Counters
+final class Counters
 {
+    private const CACHE_TTL = 3600; // 1 hour
+    private const COOKIE_PREFIX = 'counters-cookie-';
+
+    public function __construct(
+        private ?string $cachePrefix = null
+    ) {
+        $this->cachePrefix ??= 'counters:';
+    }
+
     /**
-     * Creating a record in counters table with $key, $name, $initial_value, $step
+     * Create a new counter record.
      */
-    public function create(string $key, $name, int $initial_value = 0, int $step = 1): Counter
-    {
-        $value = $initial_value;
+    public function create(
+        string $key, 
+        string $name, 
+        int $initialValue = 0, 
+        int $step = 1,
+        ?string $notes = null
+    ): Counter {
+        $value = $initialValue;
 
         try {
-            return Counter::query()->create(
-                compact('key', 'name', 'initial_value', 'step', 'value')
-            );
+            $counter = Counter::query()->create([
+                'key' => $key,
+                'name' => $name,
+                'initial_value' => $initialValue,
+                'step' => $step,
+                'value' => $value,
+                'notes' => $notes,
+            ]);
+
+            $this->clearCache($key);
+
+            return $counter;
         } catch (\Exception $e) {
             throw CounterAlreadyExists::create($key);
         }
     }
 
     /**
-     * Get a counter object for the given $key
+     * Get a counter by key with caching.
      */
-    public function get(string|int $key): ?Counter
+    public function get(string|int $key): Counter
     {
-        $counter = Counter::query()->where('key', $key)->first();
-
-        if (is_null($counter)) {
-            throw CounterDoesNotExist::create($key);
-        }
-
-        return $counter;
+        $cacheKey = $this->getCacheKey($key);
+        
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($key) {
+            $counter = Counter::query()->where('key', $key)->first();
+            
+            if (!$counter) {
+                throw CounterDoesNotExist::create($key);
+            }
+            
+            return $counter;
+        });
     }
 
     /**
-     * get the counter value for the given $key,
-     * $default will be returned in case the key is not found
+     * Get counter value with optional default.
      */
-    public function getValue(string $key, $default = null): ?int
+    public function getValue(string $key, ?int $default = null): int
+    {
+        try {
+            return $this->get($key)->value;
+        } catch (CounterDoesNotExist $e) {
+            if ($default !== null) {
+                return $default;
+            }
+            throw $e;
+        }
+    }
+
+    /**
+     * Set counter value.
+     */
+    public function setValue(string $key, int $value): bool
     {
         $counter = $this->get($key);
-
-        if ($counter) {
-            return $counter->value;
-        } elseif (! is_null($default)) {
-            return $default;
+        $result = $counter->update(['value' => $value]);
+        
+        if ($result) {
+            $this->clearCache($key);
         }
-
-        throw CounterDoesNotExist::create($key);
+        
+        return $result;
     }
 
     /**
-     * set the value of the given counter's key
-     */
-    public function setValue(string $key, string|array $value): bool
-    {
-        $counter = $this->get($key);
-        if ($counter) {
-            return $counter->update(['value' => $value]);
-        }
-        throw CounterDoesNotExist::create($key);
-    }
-
-    /**
-     * set the step value for a given counter's
+     * Set counter step value.
      */
     public function setStep(string $key, int $step): bool
     {
         $counter = $this->get($key);
-        if ($counter) {
-            return $counter->update(['step' => $step]);
+        $result = $counter->update(['step' => $step]);
+        
+        if ($result) {
+            $this->clearCache($key);
         }
-        throw CounterDoesNotExist::create($key);
+        
+        return $result;
     }
 
     /**
-     * increment the counter with the step
+     * Increment counter value.
      */
     public function increment(string $key, ?int $step = null): bool
     {
         $counter = $this->get($key);
-
-        if ($counter) {
-            return $counter->update(['value' => $counter->value + ($step ?? $counter->step)]);
+        $incrementStep = $step ?? $counter->step;
+        
+        $result = $counter->update(['value' => $counter->value + $incrementStep]);
+        
+        if ($result) {
+            $this->clearCache($key);
         }
-        throw CounterDoesNotExist::create($key);
+        
+        return $result;
     }
 
     /**
-     * decrement the counter with the step
+     * Decrement counter value.
      */
     public function decrement(string $key, ?int $step = null): bool
     {
         $counter = $this->get($key);
-
-        if ($counter) {
-            return $counter->update(['value' => $counter->value - ($step ?? $counter->step)]);
+        $decrementStep = $step ?? $counter->step;
+        
+        $result = $counter->update(['value' => $counter->value - $decrementStep]);
+        
+        if ($result) {
+            $this->clearCache($key);
         }
-        throw CounterDoesNotExist::create($key);
+        
+        return $result;
     }
 
     /**
-     * reset the counter with the default value of counter
+     * Reset counter to initial value.
      */
     public function reset(string $key): bool
     {
         $counter = $this->get($key);
-
-        if ($counter) {
-            return $counter->update(['value' => $counter->initial_value]);
+        $result = $counter->update(['value' => $counter->initial_value]);
+        
+        if ($result) {
+            $this->clearCache($key);
         }
-        throw CounterDoesNotExist::create($key);
+        
+        return $result;
     }
 
     /**
-     * This function will store a cookie for the counter key
-     * If the cookie already exist, the counter will not incremented again
+     * Increment counter only if cookie doesn't exist.
      */
     public function incrementIfNotHasCookies(string $key, ?int $step = null): bool
     {
         $cookieName = $this->getCookieName($key);
 
-        if (! array_key_exists($cookieName, $_COOKIE)) {
-            $this->increment($key, $step);
-
-            return setcookie($cookieName, 1);
+        if (!Cookie::has($cookieName)) {
+            $result = $this->increment($key, $step);
+            
+            if ($result) {
+                Cookie::queue($cookieName, '1', 60 * 24 * 365); // 1 year
+            }
+            
+            return $result;
         }
 
         return false;
     }
 
     /**
-     * This function will store a cookie for the counter key
-     * If the cookie already exist, the counter will not decremented again
+     * Decrement counter only if cookie doesn't exist.
      */
     public function decrementIfNotHasCookies(string $key, ?int $step = null): bool
     {
         $cookieName = $this->getCookieName($key);
 
-        if (! array_key_exists($cookieName, $_COOKIE)) {
-            $this->decrement($key, $step);
-
-            return setcookie($cookieName, 1);
+        if (!Cookie::has($cookieName)) {
+            $result = $this->decrement($key, $step);
+            
+            if ($result) {
+                Cookie::queue($cookieName, '1', 60 * 24 * 365); // 1 year
+            }
+            
+            return $result;
         }
 
         return false;
     }
 
     /**
-     * Get Cookie name
+     * Get all counters with optional filtering.
+     */
+    public function getAll(?string $search = null, int $limit = 50): \Illuminate\Database\Eloquent\Collection
+    {
+        $query = Counter::query();
+        
+        if ($search) {
+            $query->where(function (Builder $q) use ($search) {
+                $q->where('key', 'like', "%{$search}%")
+                  ->orWhere('name', 'like', "%{$search}%");
+            });
+        }
+        
+        return $query->limit($limit)->get();
+    }
+
+    /**
+     * Delete a counter.
+     */
+    public function delete(string $key): bool
+    {
+        $counter = $this->get($key);
+        $result = $counter->delete();
+        
+        if ($result) {
+            $this->clearCache($key);
+        }
+        
+        return $result;
+    }
+
+    /**
+     * Bulk increment multiple counters.
+     */
+    public function bulkIncrement(array $keys, ?int $step = null): array
+    {
+        $results = [];
+        
+        foreach ($keys as $key) {
+            try {
+                $results[$key] = $this->increment($key, $step);
+            } catch (CounterDoesNotExist $e) {
+                $results[$key] = false;
+            }
+        }
+        
+        return $results;
+    }
+
+    /**
+     * Bulk decrement multiple counters.
+     */
+    public function bulkDecrement(array $keys, ?int $step = null): array
+    {
+        $results = [];
+        
+        foreach ($keys as $key) {
+            try {
+                $results[$key] = $this->decrement($key, $step);
+            } catch (CounterDoesNotExist $e) {
+                $results[$key] = false;
+            }
+        }
+        
+        return $results;
+    }
+
+    /**
+     * Get counter statistics.
+     */
+    public function getStats(): array
+    {
+        return [
+            'total_counters' => Counter::count(),
+            'total_value' => Counter::sum('value'),
+            'average_value' => Counter::avg('value'),
+            'max_value' => Counter::max('value'),
+            'min_value' => Counter::min('value'),
+        ];
+    }
+
+    /**
+     * Clear cache for a specific key.
+     */
+    private function clearCache(string $key): void
+    {
+        Cache::forget($this->getCacheKey($key));
+    }
+
+    /**
+     * Get cache key for counter.
+     */
+    private function getCacheKey(string|int $key): string
+    {
+        return $this->cachePrefix . (string) $key;
+    }
+
+    /**
+     * Get cookie name for counter.
      */
     private function getCookieName(string $key): string
     {
-        return 'counters-cookie-'.$key;
+        return self::COOKIE_PREFIX . $key;
     }
 }

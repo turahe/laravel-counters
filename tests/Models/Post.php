@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Turahe\Counters\Tests\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -9,17 +11,5 @@ class Post extends Model
 {
     use HasCounter;
 
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
-    protected $table = 'posts';
-
-    /**
-     * The attributes that aren't mass assignable.
-     *
-     * @var array
-     */
-    protected $guarded = [];
+    protected $fillable = ['name'];
 }

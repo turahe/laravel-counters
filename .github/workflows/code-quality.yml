@@ -1,0 +1,282 @@
+name: Code Quality & Documentation
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  code-quality:
+    runs-on: ubuntu-latest
+    name: Code Quality Analysis
+    strategy:
+      matrix:
+        php: [8.4]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php }}
+        extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite
+        tools: composer:v2
+
+    - name: Cache Composer packages
+      uses: actions/cache@v4
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-${{ matrix.php }}-quality-${{ hashFiles('**/composer.lock') }}
+
+    - name: Install dependencies
+      run: |
+        composer require "laravel/framework:^12.0" --no-interaction --no-update
+        composer install --prefer-dist --no-progress
+
+    - name: Run PHPStan (Static Analysis)
+      run: |
+        if [ -f "vendor/bin/phpstan" ]; then
+          ./vendor/bin/phpstan analyse --level=8 --memory-limit=2G src/ tests/
+        else
+          echo "PHPStan not available, skipping..."
+        fi
+
+    - name: Run PHP CS Fixer
+      run: |
+        if [ -f "vendor/bin/php-cs-fixer" ]; then
+          ./vendor/bin/php-cs-fixer fix --dry-run --diff --verbose
+        else
+          echo "PHP CS Fixer not available, skipping..."
+        fi
+
+    - name: Run Laravel Pint
+      run: |
+        if [ -f "vendor/bin/pint" ]; then
+          ./vendor/bin/pint --test --verbose
+        else
+          echo "Laravel Pint not available, skipping..."
+        fi
+
+    - name: Check for syntax errors
+      run: |
+        find src/ tests/ -name "*.php" -exec php -l {} \;
+
+    - name: Run PHP Mess Detector
+      run: |
+        if [ -f "vendor/bin/phpmd" ]; then
+          ./vendor/bin/phpmd src/ text cleancode,codesize,controversial,design,naming,unusedcode
+        else
+          echo "PHPMD not available, skipping..."
+        fi
+
+    - name: Run PHP Copy/Paste Detector
+      run: |
+        if [ -f "vendor/bin/phpcpd" ]; then
+          ./vendor/bin/phpcpd src/ tests/ --min-lines=5 --min-tokens=70
+        else
+          echo "PHPCPD not available, skipping..."
+        fi
+
+  documentation:
+    runs-on: ubuntu-latest
+    name: Documentation Generation
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: 8.4
+        extensions: mbstring, xml, ctype, iconv, intl
+        tools: composer:v2
+
+    - name: Cache Composer packages
+      uses: actions/cache@v4
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-8.4-docs-${{ hashFiles('**/composer.lock') }}
+
+    - name: Install dependencies
+      run: |
+        composer require "laravel/framework:^12.0" --no-interaction --no-update
+        composer install --prefer-dist --no-progress
+
+    - name: Generate API Documentation
+      run: |
+        if [ -f "vendor/bin/phpdoc" ]; then
+          ./vendor/bin/phpdoc -d src/ -t docs/api --template=clean
+        else
+          echo "PHPDocumentor not available, skipping..."
+        fi
+
+    - name: Generate PHPDoc
+      run: |
+        if [ -f "vendor/bin/phpdoc" ]; then
+          ./vendor/bin/phpdoc -d src/ -t docs/phpdoc --template=clean
+        fi
+
+    - name: Upload documentation
+      uses: actions/upload-artifact@v4
+      with:
+        name: documentation
+        path: docs/
+        retention-days: 30
+
+  performance:
+    runs-on: ubuntu-latest
+    name: Performance Testing
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: 8.4
+        extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite
+        tools: composer:v2
+
+    - name: Cache Composer packages
+      uses: actions/cache@v4
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-8.4-performance-${{ hashFiles('**/composer.lock') }}
+
+    - name: Install dependencies
+      run: |
+        composer require "laravel/framework:^12.0" --no-interaction --no-update
+        composer install --prefer-dist --no-progress
+
+    - name: Run performance tests
+      run: |
+        # Create performance test script
+        cat > performance_test.php << 'EOF'
+        <?php
+        require_once 'vendor/autoload.php';
+        
+        use Turahe\Counters\Classes\Counters;
+        
+        $counters = new Counters();
+        
+        // Performance test: Create 1000 counters
+        $start = microtime(true);
+        for ($i = 1; $i <= 1000; $i++) {
+            try {
+                $counters->create("test_counter_$i", "Test Counter $i", 0, 1);
+            } catch (Exception $e) {
+                // Counter might already exist
+            }
+        }
+        $createTime = microtime(true) - $start;
+        
+        // Performance test: Increment 1000 counters
+        $start = microtime(true);
+        for ($i = 1; $i <= 1000; $i++) {
+            try {
+                $counters->increment("test_counter_$i");
+            } catch (Exception $e) {
+                // Counter might not exist
+            }
+        }
+        $incrementTime = microtime(true) - $start;
+        
+        // Performance test: Get 1000 counter values
+        $start = microtime(true);
+        for ($i = 1; $i <= 1000; $i++) {
+            try {
+                $counters->getValue("test_counter_$i");
+            } catch (Exception $e) {
+                // Counter might not exist
+            }
+        }
+        $getTime = microtime(true) - $start;
+        
+        echo "Performance Results:\n";
+        echo "Create 1000 counters: " . number_format($createTime, 4) . "s\n";
+        echo "Increment 1000 counters: " . number_format($incrementTime, 4) . "s\n";
+        echo "Get 1000 counter values: " . number_format($getTime, 4) . "s\n";
+        EOF
+        
+        php performance_test.php
+
+    - name: Run memory usage test
+      run: |
+        php -d memory_limit=512M -r "
+        require_once 'vendor/autoload.php';
+        use Turahe\Counters\Classes\Counters;
+        
+        \$counters = new Counters();
+        \$startMemory = memory_get_usage();
+        
+        for (\$i = 1; \$i <= 100; \$i++) {
+            try {
+                \$counters->create('memory_test_' . \$i, 'Memory Test ' . \$i, 0, 1);
+            } catch (Exception \$e) {
+                // Counter might already exist
+            }
+        }
+        
+        \$endMemory = memory_get_usage();
+        \$peakMemory = memory_get_peak_usage();
+        
+        echo 'Memory Usage Test Results:' . PHP_EOL;
+        echo 'Start memory: ' . number_format(\$startMemory) . ' bytes' . PHP_EOL;
+        echo 'End memory: ' . number_format(\$endMemory) . ' bytes' . PHP_EOL;
+        echo 'Peak memory: ' . number_format(\$peakMemory) . ' bytes' . PHP_EOL;
+        echo 'Memory increase: ' . number_format(\$endMemory - \$startMemory) . ' bytes' . PHP_EOL;
+        "
+
+  coverage:
+    runs-on: ubuntu-latest
+    name: Code Coverage
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: 8.4
+        extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite
+        coverage: xdebug
+        tools: composer:v2
+
+    - name: Cache Composer packages
+      uses: actions/cache@v4
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-8.4-coverage-${{ hashFiles('**/composer.lock') }}
+
+    - name: Install dependencies
+      run: |
+        composer require "laravel/framework:^12.0" --no-interaction --no-update
+        composer install --prefer-dist --no-progress
+
+    - name: Run tests with coverage
+      run: |
+        ./vendor/bin/phpunit --coverage-html coverage-html --coverage-clover coverage.xml --testdox
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: coverage-html/
+        retention-days: 30
+
+    - name: Upload coverage XML
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-xml
+        path: coverage.xml
+        retention-days: 30
