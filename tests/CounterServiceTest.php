@@ -146,10 +146,10 @@ class CounterServiceTest extends TestCase
     {
         $counterModel = new Counters;
         $counterModel->create('cookie_counter', 'cookie_counter', 0, 1);
-        
+
         // Simulate no cookie present
         unset($_COOKIE['counters-cookie-cookie_counter']);
-        
+
         $result = $counterModel->incrementIfNotHasCookies('cookie_counter');
         $this->assertTrue($result);
         $this->assertDatabaseHas('counters', [
@@ -166,10 +166,10 @@ class CounterServiceTest extends TestCase
     {
         $counterModel = new Counters;
         $counterModel->create('cookie_counter_dec', 'cookie_counter_dec', 2, 1);
-        
+
         // Simulate no cookie present
         unset($_COOKIE['counters-cookie-cookie_counter_dec']);
-        
+
         $result = $counterModel->decrementIfNotHasCookies('cookie_counter_dec');
         $this->assertTrue($result);
         $this->assertDatabaseHas('counters', [
