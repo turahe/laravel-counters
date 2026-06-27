@@ -90,41 +90,40 @@ jobs:
         release_name: Release ${{ steps.version.outputs.VERSION }}
         body: |
           ## 🚀 Release ${{ steps.version.outputs.VERSION }}
-          
+
           ### ✨ Features
-          - Optimized for PHP 8.4 and Laravel 11/12
-          - Enhanced performance with caching
-          - Bulk operations support
-          - Improved error handling
-          
+          - Laravel 11, 12, and 13 support
+          - PHP 8.4 and 8.5 compatibility
+          - Docker and Makefile test matrix for local development
+          - Codecov coverage reporting
+
           ### 🔧 Technical Improvements
-          - Modern PHP 8.4 features throughout
-          - Laravel 11/12 compatibility
-          - Enhanced type safety
-          - Better database indexing
-          
+          - GitHub Actions upgraded (checkout v7, cache v6, codecov-action v7)
+          - Dedicated Codecov workflow and configuration
+          - Removed legacy StyleCI and Travis CI configs
+
           ### 📦 Installation
           ```bash
-          composer require turahe/laravel-counters
+          composer require turahe/laravel-counters:^3.0
           ```
-          
+
           ### 🎯 Usage
           ```php
           // Create a counter
           Counters::create('page_views', 'Page Views', 0, 1);
-          
+
           // Increment counter
           Counters::increment('page_views');
-          
+
           // Get counter value
           $value = Counters::getValue('page_views');
           ```
-          
+
           ### 📊 Test Results
           - ✅ All tests passing
-          - ✅ PHP 8.4 compatible
-          - ✅ Laravel 11/12 ready
-          - ✅ Production optimized
+          - ✅ PHP 8.4/8.5 compatible
+          - ✅ Laravel 11/12/13 ready
+          - ✅ Codecov coverage enabled
         draft: false
         prerelease: false
 

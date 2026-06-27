@@ -1,24 +1,28 @@
 # Laravel Counters
 
-A modern, optimized counter management package for Laravel 11/12 with PHP 8.4 support.
+[![PHP Tests](https://github.com/turahe/laravel-counters/actions/workflows/php.yml/badge.svg)](https://github.com/turahe/laravel-counters/actions/workflows/php.yml)
+[![Codecov](https://codecov.io/gh/turahe/laravel-counters/graph/badge.svg)](https://codecov.io/gh/turahe/laravel-counters)
+[![Latest Release](https://img.shields.io/github/v/release/turahe/laravel-counters)](https://github.com/turahe/laravel-counters/releases)
+[![Latest Version](https://img.shields.io/packagist/v/turahe/laravel-counters)](https://packagist.org/packages/turahe/laravel-counters)
+[![PHP Version](https://img.shields.io/packagist/php-v/turahe/laravel-counters)](https://packagist.org/packages/turahe/laravel-counters)
+[![License](https://img.shields.io/github/license/turahe/laravel-counters)](LICENSE)
+
+A modern, optimized counter management package for Laravel 11/12/13 with PHP 8.4 and 8.5 support.
 
 A flexible and powerful counter management system for Laravel applications. Easily track and manage various types of counters like page views, downloads, user actions, and more without cluttering your database schema.
 
 ## 🚀 Features
 
-- ✅ **PHP 8.4 Optimized**: Uses readonly properties, constructor property promotion, match expressions, and improved type declarations
-- ✅ **Laravel 11/12 Compatible**: Modern service provider patterns and dependency injection
+- ✅ **PHP 8.4 & 8.5**: Readonly properties, constructor property promotion, match expressions, and strict typing
+- ✅ **Laravel 11/12/13 Compatible**: Modern service provider patterns and dependency injection
 - ✅ **High Performance**: Built-in caching, bulk operations, and optimized database queries
-- ✅ **Type Safe**: Full type declarations and strict typing throughout
-- ✅ **Modern Patterns**: Uses modern PHP and Laravel patterns and best practices
-- ✅ **Comprehensive Testing**: Full test coverage with modern testing practices
+- ✅ **Type Safe**: Full type declarations throughout
+- ✅ **Comprehensive Testing**: Full test suite with Codecov coverage reporting
 - **Model-specific counters**: Associate counters with any Eloquent model
 - **Global counters**: System-wide counters for general statistics
 - **Cookie-based tracking**: Prevent duplicate increments from the same user
 - **Flexible configuration**: Customizable table names and settings
 - **Artisan commands**: Create counters via command line
-- **Laravel 10-12 support**: Compatible with modern Laravel versions
-- **PHP 8.2+ support**: Built for modern PHP applications
 
 ## 📋 Table of Contents
 
@@ -37,8 +41,8 @@ A flexible and powerful counter management system for Laravel applications. Easi
 
 ### Requirements
 
-- **PHP**: 8.4 or higher
-- **Laravel**: 11.x or 12.x
+- **PHP**: 8.4 or higher (8.5 supported)
+- **Laravel**: 11.x, 12.x, or 13.x
 
 ### Step-by-Step Installation
 
@@ -272,13 +276,44 @@ Parameters:
 
 ## Testing
 
-The package includes comprehensive tests. Run them with:
+The package includes a comprehensive test suite covering model counters, global counters, cookie-based tracking, exceptions, and configuration.
+
+### Local
 
 ```bash
-./vendor/bin/phpunit
+composer install
+composer test
 ```
 
-### Test Coverage
+Generate an HTML coverage report locally:
+
+```bash
+composer test-coverage
+```
+
+### Docker
+
+Run tests in a container (default: PHP 8.5 + Laravel 13):
+
+```bash
+docker compose run --rm test
+```
+
+### Makefile
+
+Run the full CI matrix (PHP 8.4/8.5 × Laravel 11/12/13):
+
+```bash
+make test-all
+make test-php84-laravel12
+make help
+```
+
+### Coverage
+
+Coverage is uploaded to [Codecov](https://codecov.io/gh/turahe/laravel-counters) on every push and pull request via the [Codecov workflow](.github/workflows/codecov.yml).
+
+### What's tested
 
 - ✅ Model counter operations
 - ✅ Global counter operations
@@ -361,15 +396,7 @@ $results = Counters::bulkDecrement(['counter1', 'counter2'], 3);
 ### Database Indexes
 The migration includes optimized indexes for better query performance.
 
-## Testing
-
-Run the test suite:
-
-```bash
-composer test
-```
-
-## PHP 8.4 Features Used
+## PHP 8.4+ Features Used
 
 - **Readonly Properties**: Immutable data structures
 - **Constructor Property Promotion**: Cleaner class definitions
@@ -378,7 +405,7 @@ composer test
 - **Improved Type Declarations**: Better type safety
 - **Strict Types**: Enforced type checking
 
-## Laravel 11/12 Features Used
+## Laravel 11/12/13 Features Used
 
 - **Modern Service Providers**: Deferrable providers for better performance
 - **Improved Dependency Injection**: Constructor injection and type hints

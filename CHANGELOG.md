@@ -5,6 +5,56 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2026-06-27
+
+### 🚀 Major Release - Laravel 13 & PHP 8.5
+
+This release adds Laravel 13 and PHP 8.5 support, modernizes CI/CD, and improves the local development experience.
+
+### ✨ Added
+
+- **Laravel 13 support** via `illuminate/*` and `orchestra/testbench` ^11.0
+- **PHP 8.5** testing across GitHub Actions and Docker
+- **Docker** setup for running PHPUnit in containers (`Dockerfile`, `docker-compose.yml`)
+- **Makefile** with `test-all` target for the full PHP/Laravel CI matrix
+- **Codecov** integration with dedicated workflow and `codecov.yml` configuration
+- **GitHub Release** badge in README
+
+### 🔧 Changed
+
+- **PHPUnit** constraint updated to `^10.0 || ^11.5.50 || ^12.5.8` for Laravel 11–13 compatibility
+- **GitHub Actions** upgraded to `actions/checkout@v7`, `actions/cache@v6`, and `codecov/codecov-action@v7`
+- **CI matrix** now tests PHP 8.4/8.5 with Laravel 11/12/13
+- **README** updated with badges, Docker/Make testing instructions, and current requirements
+- **Release workflow** targets PHP 8.5 and Laravel 13
+
+### 🗑️ Removed
+
+- **StyleCI** configuration (`.styleci.yml`)
+- **Travis CI** configuration (`.travis.yml`)
+- Duplicate coverage job from code-quality workflow (consolidated into Codecov workflow)
+
+### 📦 Dependencies
+
+- **Laravel**: `^11.0 || ^12.0 || ^13.0`
+- **PHP**: `^8.4` (8.5 supported in CI and Docker)
+- **Orchestra Testbench**: `^9.0 || ^10.0 || ^11.0`
+
+### 🚀 Migration Guide
+
+#### From v2.x to v3.0.0
+
+1. **Update PHP** to 8.4 or higher (8.5 recommended)
+2. **Update Laravel** to 11.x, 12.x, or 13.x as needed
+3. **Update the package**:
+   ```bash
+   composer require turahe/laravel-counters:^3.0
+   ```
+
+No application code changes are required for existing counter usage.
+
+---
+
 ## [2.0.0] - 2024-12-10
 
 ### 🚀 Major Release - PHP 8.4 & Laravel 11/12 Optimization
