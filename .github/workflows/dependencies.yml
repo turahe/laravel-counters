@@ -22,7 +22,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
 
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
@@ -32,7 +32,7 @@ jobs:
         tools: composer:v2
 
     - name: Cache Composer packages
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: vendor
         key: ${{ runner.os }}-php-${{ matrix.php }}-security-${{ hashFiles('**/composer.lock') }}
@@ -91,7 +91,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
 
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
@@ -101,7 +101,7 @@ jobs:
         tools: composer:v2
 
     - name: Cache Composer packages
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: vendor
         key: ${{ runner.os }}-php-8.5-update-${{ hashFiles('**/composer.lock') }}
@@ -169,7 +169,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
 
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
@@ -179,7 +179,7 @@ jobs:
         tools: composer:v2
 
     - name: Cache Composer packages
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: vendor
         key: ${{ runner.os }}-php-8.5-dependabot-${{ hashFiles('**/composer.lock') }}
