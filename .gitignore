@@ -28,3 +28,6 @@ composer.lock
 
 ### ASSET EXCLUSIONS ###
 vendor/
+coverage/
+coverage.xml
+coverage-html/

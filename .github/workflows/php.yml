@@ -29,7 +29,6 @@ jobs:
       with:
         php-version: ${{ matrix.php }}
         extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, pdo_mysql
-        coverage: xdebug
         tools: composer:v2
 
     - name: Validate composer.json and composer.lock
@@ -62,17 +61,8 @@ jobs:
           ./vendor/bin/php-cs-fixer fix --dry-run --diff
         fi
 
-    - name: Run test suite with coverage
-      run: |
-        ./vendor/bin/phpunit --testdox --coverage-text --coverage-clover=coverage.xml
-
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
-      with:
-        file: ./coverage.xml
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
+    - name: Run test suite
+      run: ./vendor/bin/phpunit --testdox
 
   lint:
     runs-on: ubuntu-latest
