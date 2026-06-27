@@ -1,0 +1,20 @@
+services:
+  test:
+    image: laravel-counters-test:php${PHP_VERSION:-8.5}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.5}
+        LARAVEL_VERSION: ${LARAVEL_VERSION:-^13.0}
+        PHPUNIT_VERSION: ${PHPUNIT_VERSION:-^12.5.8}
+    volumes:
+      - .:/app
+      - vendor_data:/app/vendor
+    working_dir: /app
+    environment:
+      LARAVEL_VERSION: ${LARAVEL_VERSION:-^13.0}
+      PHPUNIT_VERSION: ${PHPUNIT_VERSION:-^12.5.8}
+
+volumes:
+  vendor_data:

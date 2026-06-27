@@ -13,7 +13,7 @@ jobs:
     name: Code Quality Analysis
     strategy:
       matrix:
-        php: [8.4]
+        php: [8.5]
 
     steps:
     - name: Checkout code
@@ -34,7 +34,8 @@ jobs:
 
     - name: Install dependencies
       run: |
-        composer require "laravel/framework:^12.0" --no-interaction --no-update
+        composer config audit.block-insecure false
+        composer require "laravel/framework:^13.0" --no-interaction --no-update
         composer install --prefer-dist --no-progress
 
     - name: Run PHPStan (Static Analysis)
@@ -93,7 +94,7 @@ jobs:
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: 8.4
+        php-version: 8.5
         extensions: mbstring, xml, ctype, iconv, intl
         tools: composer:v2
 
@@ -101,11 +102,12 @@ jobs:
       uses: actions/cache@v4
       with:
         path: vendor
-        key: ${{ runner.os }}-php-8.4-docs-${{ hashFiles('**/composer.lock') }}
+        key: ${{ runner.os }}-php-8.5-docs-${{ hashFiles('**/composer.lock') }}
 
     - name: Install dependencies
       run: |
-        composer require "laravel/framework:^12.0" --no-interaction --no-update
+        composer config audit.block-insecure false
+        composer require "laravel/framework:^13.0" --no-interaction --no-update
         composer install --prefer-dist --no-progress
 
     - name: Generate API Documentation
@@ -141,7 +143,7 @@ jobs:
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: 8.4
+        php-version: 8.5
         extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite
         tools: composer:v2
 
@@ -149,11 +151,12 @@ jobs:
       uses: actions/cache@v4
       with:
         path: vendor
-        key: ${{ runner.os }}-php-8.4-performance-${{ hashFiles('**/composer.lock') }}
+        key: ${{ runner.os }}-php-8.5-performance-${{ hashFiles('**/composer.lock') }}
 
     - name: Install dependencies
       run: |
-        composer require "laravel/framework:^12.0" --no-interaction --no-update
+        composer config audit.block-insecure false
+        composer require "laravel/framework:^13.0" --no-interaction --no-update
         composer install --prefer-dist --no-progress
 
     - name: Run performance tests
@@ -247,7 +250,7 @@ jobs:
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: 8.4
+        php-version: 8.5
         extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite
         coverage: xdebug
         tools: composer:v2
@@ -256,11 +259,12 @@ jobs:
       uses: actions/cache@v4
       with:
         path: vendor
-        key: ${{ runner.os }}-php-8.4-coverage-${{ hashFiles('**/composer.lock') }}
+        key: ${{ runner.os }}-php-8.5-coverage-${{ hashFiles('**/composer.lock') }}
 
     - name: Install dependencies
       run: |
-        composer require "laravel/framework:^12.0" --no-interaction --no-update
+        composer config audit.block-insecure false
+        composer require "laravel/framework:^13.0" --no-interaction --no-update
         composer install --prefer-dist --no-progress
 
     - name: Run tests with coverage

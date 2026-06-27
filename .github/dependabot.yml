@@ -1,5 +1,5 @@
 # Dependabot configuration for Laravel Counters package
-# Focused on PHP 8.4 and Laravel 11/12 compatibility
+# Focused on PHP 8.4/8.5 and Laravel 11/12/13 compatibility
 
 version: 2
 updates:
