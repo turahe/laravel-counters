@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Turahe\Counters\Classes;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Cookie;
 use Turahe\Counters\Exceptions\CounterAlreadyExists;
@@ -17,6 +18,7 @@ use Turahe\Counters\Models\Counter;
 final class Counters
 {
     private const CACHE_TTL = 3600; // 1 hour
+
     private const COOKIE_PREFIX = 'counters-cookie-';
 
     public function __construct(
@@ -29,9 +31,9 @@ final class Counters
      * Create a new counter record.
      */
     public function create(
-        string $key, 
-        string $name, 
-        int $initialValue = 0, 
+        string $key,
+        string $name,
+        int $initialValue = 0,
         int $step = 1,
         ?string $notes = null
     ): Counter {
@@ -61,14 +63,14 @@ final class Counters
     public function get(string|int $key): Counter
     {
         $cacheKey = $this->getCacheKey($key);
-        
+
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($key) {
             $counter = Counter::query()->where('key', $key)->first();
-            
-            if (!$counter) {
+
+            if (! $counter) {
                 throw CounterDoesNotExist::create($key);
             }
-            
+
             return $counter;
         });
     }
@@ -95,11 +97,11 @@ final class Counters
     {
         $counter = $this->get($key);
         $result = $counter->update(['value' => $value]);
-        
+
         if ($result) {
             $this->clearCache($key);
         }
-        
+
         return $result;
     }
 
@@ -110,11 +112,11 @@ final class Counters
     {
         $counter = $this->get($key);
         $result = $counter->update(['step' => $step]);
-        
+
         if ($result) {
             $this->clearCache($key);
         }
-        
+
         return $result;
     }
 
@@ -125,13 +127,13 @@ final class Counters
     {
         $counter = $this->get($key);
         $incrementStep = $step ?? $counter->step;
-        
+
         $result = $counter->update(['value' => $counter->value + $incrementStep]);
-        
+
         if ($result) {
             $this->clearCache($key);
         }
-        
+
         return $result;
     }
 
@@ -142,13 +144,13 @@ final class Counters
     {
         $counter = $this->get($key);
         $decrementStep = $step ?? $counter->step;
-        
+
         $result = $counter->update(['value' => $counter->value - $decrementStep]);
-        
+
         if ($result) {
             $this->clearCache($key);
         }
-        
+
         return $result;
     }
 
@@ -159,11 +161,11 @@ final class Counters
     {
         $counter = $this->get($key);
         $result = $counter->update(['value' => $counter->initial_value]);
-        
+
         if ($result) {
             $this->clearCache($key);
         }
-        
+
         return $result;
     }
 
@@ -174,13 +176,13 @@ final class Counters
     {
         $cookieName = $this->getCookieName($key);
 
-        if (!Cookie::has($cookieName)) {
+        if (! Cookie::has($cookieName)) {
             $result = $this->increment($key, $step);
-            
+
             if ($result) {
                 Cookie::queue($cookieName, '1', 60 * 24 * 365); // 1 year
             }
-            
+
             return $result;
         }
 
@@ -194,13 +196,13 @@ final class Counters
     {
         $cookieName = $this->getCookieName($key);
 
-        if (!Cookie::has($cookieName)) {
+        if (! Cookie::has($cookieName)) {
             $result = $this->decrement($key, $step);
-            
+
             if ($result) {
                 Cookie::queue($cookieName, '1', 60 * 24 * 365); // 1 year
             }
-            
+
             return $result;
         }
 
@@ -210,17 +212,17 @@ final class Counters
     /**
      * Get all counters with optional filtering.
      */
-    public function getAll(?string $search = null, int $limit = 50): \Illuminate\Database\Eloquent\Collection
+    public function getAll(?string $search = null, int $limit = 50): Collection
     {
         $query = Counter::query();
-        
+
         if ($search) {
             $query->where(function (Builder $q) use ($search) {
                 $q->where('key', 'like', "%{$search}%")
-                  ->orWhere('name', 'like', "%{$search}%");
+                    ->orWhere('name', 'like', "%{$search}%");
             });
         }
-        
+
         return $query->limit($limit)->get();
     }
 
@@ -231,11 +233,11 @@ final class Counters
     {
         $counter = $this->get($key);
         $result = $counter->delete();
-        
+
         if ($result) {
             $this->clearCache($key);
         }
-        
+
         return $result;
     }
 
@@ -245,7 +247,7 @@ final class Counters
     public function bulkIncrement(array $keys, ?int $step = null): array
     {
         $results = [];
-        
+
         foreach ($keys as $key) {
             try {
                 $results[$key] = $this->increment($key, $step);
@@ -253,7 +255,7 @@ final class Counters
                 $results[$key] = false;
             }
         }
-        
+
         return $results;
     }
 
@@ -263,7 +265,7 @@ final class Counters
     public function bulkDecrement(array $keys, ?int $step = null): array
     {
         $results = [];
-        
+
         foreach ($keys as $key) {
             try {
                 $results[$key] = $this->decrement($key, $step);
@@ -271,7 +273,7 @@ final class Counters
                 $results[$key] = false;
             }
         }
-        
+
         return $results;
     }
 
@@ -302,7 +304,7 @@ final class Counters
      */
     private function getCacheKey(string|int $key): string
     {
-        return $this->cachePrefix . (string) $key;
+        return $this->cachePrefix.(string) $key;
     }
 
     /**
@@ -310,6 +312,6 @@ final class Counters
      */
     private function getCookieName(string $key): string
     {
-        return self::COOKIE_PREFIX . $key;
+        return self::COOKIE_PREFIX.$key;
     }
 }

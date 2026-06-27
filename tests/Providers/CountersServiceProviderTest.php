@@ -4,18 +4,21 @@ declare(strict_types=1);
 
 namespace Turahe\Counters\Tests\Providers;
 
-use Turahe\Counters\Tests\TestCase;
-use Turahe\Counters\CountersServiceProvider;
+use Illuminate\Contracts\Support\DeferrableProvider;
 use Turahe\Counters\Classes\Counters;
-use Turahe\Counters\Facades\Counters as CountersFacade;
 use Turahe\Counters\Commands\MakeCounter;
+use Turahe\Counters\CountersServiceProvider;
+use Turahe\Counters\Facades\Counters as CountersFacade;
+use Turahe\Counters\Models\Counter;
+use Turahe\Counters\Models\Counterable;
+use Turahe\Counters\Tests\TestCase;
 
 class CountersServiceProviderTest extends TestCase
 {
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Clear any existing service bindings
         $this->app->forgetInstance(Counters::class);
         $this->app->forgetInstance('counters');
@@ -52,7 +55,7 @@ class CountersServiceProviderTest extends TestCase
     public function test_service_provider_creates_counters_with_custom_cache_prefix()
     {
         config(['counter.cache_prefix' => 'custom:']);
-        
+
         $provider = new CountersServiceProvider($this->app);
         $provider->register();
 
@@ -63,7 +66,7 @@ class CountersServiceProviderTest extends TestCase
     public function test_service_provider_creates_counters_with_default_cache_prefix()
     {
         config(['counter.cache_prefix' => null]);
-        
+
         $provider = new CountersServiceProvider($this->app);
         $provider->register();
 
@@ -94,9 +97,9 @@ class CountersServiceProviderTest extends TestCase
     public function test_service_provider_provides_services()
     {
         $provider = new CountersServiceProvider($this->app);
-        
+
         $services = $provider->provides();
-        
+
         $this->assertContains(Counters::class, $services);
         $this->assertContains('counters', $services);
     }
@@ -104,8 +107,8 @@ class CountersServiceProviderTest extends TestCase
     public function test_service_provider_implements_deferrable_provider()
     {
         $provider = new CountersServiceProvider($this->app);
-        
-        $this->assertInstanceOf(\Illuminate\Contracts\Support\DeferrableProvider::class, $provider);
+
+        $this->assertInstanceOf(DeferrableProvider::class, $provider);
     }
 
     public function test_facade_registration()
@@ -115,7 +118,7 @@ class CountersServiceProviderTest extends TestCase
         $provider->boot();
 
         // Test that the facade is accessible
-        $this->assertInstanceOf(CountersFacade::class, new CountersFacade());
+        $this->assertInstanceOf(CountersFacade::class, new CountersFacade);
     }
 
     public function test_config_has_expected_structure()
@@ -124,7 +127,7 @@ class CountersServiceProviderTest extends TestCase
         $provider->register();
 
         $config = $this->app['config']['counter'];
-        
+
         $this->assertArrayHasKey('tables', $config);
         $this->assertArrayHasKey('models', $config);
         $this->assertArrayHasKey('database_connection', $config);
@@ -140,12 +143,12 @@ class CountersServiceProviderTest extends TestCase
         $provider->register();
 
         $config = $this->app['config']['counter'];
-        
+
         $this->assertEquals('counters', $config['tables']['table_name']);
         $this->assertEquals('counterables', $config['tables']['table_pivot_name']);
-        $this->assertEquals(\Turahe\Counters\Models\Counter::class, $config['models']['counter']);
-        $this->assertEquals(\Turahe\Counters\Models\Counterable::class, $config['models']['counterable']);
-        
+        $this->assertEquals(Counter::class, $config['models']['counter']);
+        $this->assertEquals(Counterable::class, $config['models']['counterable']);
+
         // Check if cache structure exists before accessing
         if (isset($config['cache']['ttl'])) {
             $this->assertEquals(3600, $config['cache']['ttl']);
@@ -159,10 +162,10 @@ class CountersServiceProviderTest extends TestCase
         $provider->boot();
 
         // Test that migrations can be found
-        $migrationPath = __DIR__ . '/../../database/migrations';
+        $migrationPath = __DIR__.'/../../database/migrations';
         $this->assertDirectoryExists($migrationPath);
-        
-        $migrationFiles = glob($migrationPath . '/*.php');
+
+        $migrationFiles = glob($migrationPath.'/*.php');
         $this->assertNotEmpty($migrationFiles);
     }
 
@@ -200,7 +203,7 @@ class CountersServiceProviderTest extends TestCase
     {
         // Set a custom config value
         $this->app['config']->set('counter.tables.table_name', 'custom_counters');
-        
+
         $provider = new CountersServiceProvider($this->app);
         $provider->register();
 

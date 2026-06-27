@@ -49,9 +49,9 @@ return new class extends Migration
 
             // Add foreign key constraint
             $table->foreign('counter_id')
-                  ->references('id')
-                  ->on($countersTable)
-                  ->onDelete('cascade');
+                ->references('id')
+                ->on($countersTable)
+                ->onDelete('cascade');
         });
     }
 
@@ -62,7 +62,7 @@ return new class extends Migration
     {
         $countersTable = config('counter.tables.table_name', 'counters');
         $counterablesTable = config('counter.tables.table_pivot_name', 'counterables');
-        
+
         Schema::dropIfExists($counterablesTable);
         Schema::dropIfExists($countersTable);
     }

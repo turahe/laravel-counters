@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace Turahe\Counters\Tests\Models;
 
-use Turahe\Counters\Tests\TestCase;
 use Turahe\Counters\Models\Counter;
-use Turahe\Counters\Tests\Models\Post;
+use Turahe\Counters\Tests\TestCase;
 
 class CounterModelTest extends TestCase
 {
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Clear any existing counters
         Counter::query()->delete();
     }
@@ -29,7 +28,7 @@ class CounterModelTest extends TestCase
         $this->assertEquals('Test Counter', $counter->name);
         $this->assertEquals(0, $counter->initial_value);
         $this->assertEquals(0, $counter->value);
-        
+
         // Refresh from database to ensure proper defaults
         $counter->refresh();
         $this->assertEquals(1, $counter->step);
@@ -57,18 +56,18 @@ class CounterModelTest extends TestCase
     public function test_counter_uses_custom_table_name()
     {
         config(['counter.tables.table_name' => 'custom_counters']);
-        
-        $counter = new Counter();
-        
+
+        $counter = new Counter;
+
         $this->assertEquals('custom_counters', $counter->getTable());
     }
 
     public function test_counter_uses_custom_database_connection()
     {
         config(['counter.database_connection' => 'sqlite']);
-        
-        $counter = new Counter();
-        
+
+        $counter = new Counter;
+
         $this->assertEquals('sqlite', $counter->getConnectionName());
     }
 
@@ -78,7 +77,7 @@ class CounterModelTest extends TestCase
         Counter::create(['key' => 'second_counter', 'name' => 'Second']);
 
         $result = Counter::byKey('first_counter')->get();
-        
+
         $this->assertCount(1, $result);
         $this->assertEquals('first_counter', $result->first()->key);
     }
@@ -90,9 +89,9 @@ class CounterModelTest extends TestCase
         Counter::create(['key' => 'other', 'name' => 'Other']);
 
         $result = Counter::byName('Test')->get();
-        
+
         $this->assertCount(2, $result);
-        $this->assertTrue($result->every(fn($counter) => str_contains($counter->name, 'Test')));
+        $this->assertTrue($result->every(fn ($counter) => str_contains($counter->name, 'Test')));
     }
 
     public function test_scope_with_value_greater_than()
@@ -102,9 +101,9 @@ class CounterModelTest extends TestCase
         Counter::create(['key' => 'high', 'name' => 'High', 'value' => 15]);
 
         $result = Counter::withValueGreaterThan(7)->get();
-        
+
         $this->assertCount(2, $result);
-        $this->assertTrue($result->every(fn($counter) => $counter->value > 7));
+        $this->assertTrue($result->every(fn ($counter) => $counter->value > 7));
     }
 
     public function test_scope_with_value_less_than()
@@ -114,9 +113,9 @@ class CounterModelTest extends TestCase
         Counter::create(['key' => 'high', 'name' => 'High', 'value' => 15]);
 
         $result = Counter::withValueLessThan(12)->get();
-        
+
         $this->assertCount(2, $result);
-        $this->assertTrue($result->every(fn($counter) => $counter->value < 12));
+        $this->assertTrue($result->every(fn ($counter) => $counter->value < 12));
     }
 
     public function test_scope_active()
@@ -126,9 +125,9 @@ class CounterModelTest extends TestCase
         Counter::create(['key' => 'inactive', 'name' => 'Inactive', 'value' => 0]);
 
         $result = Counter::active()->get();
-        
+
         $this->assertCount(2, $result);
-        $this->assertTrue($result->every(fn($counter) => $counter->value > 0));
+        $this->assertTrue($result->every(fn ($counter) => $counter->value > 0));
     }
 
     public function test_scope_inactive()
@@ -138,9 +137,9 @@ class CounterModelTest extends TestCase
         Counter::create(['key' => 'inactive2', 'name' => 'Inactive 2', 'value' => 0]);
 
         $result = Counter::inactive()->get();
-        
+
         $this->assertCount(2, $result);
-        $this->assertTrue($result->every(fn($counter) => $counter->value === 0));
+        $this->assertTrue($result->every(fn ($counter) => $counter->value === 0));
     }
 
     public function test_display_name_attribute()
@@ -242,7 +241,7 @@ class CounterModelTest extends TestCase
     public function test_counterable_relationship()
     {
         $counter = Counter::create(['key' => 'relationship_test', 'name' => 'Relationship Test']);
-        
+
         // Test that the relationship method exists
         $this->assertTrue(method_exists($counter, 'counterable'));
     }
@@ -250,9 +249,9 @@ class CounterModelTest extends TestCase
     public function test_hidden_attributes()
     {
         $counter = Counter::create(['key' => 'hidden_test', 'name' => 'Hidden Test']);
-        
+
         $array = $counter->toArray();
-        
+
         $this->assertArrayNotHasKey('id', $array);
         $this->assertArrayHasKey('key', $array);
         $this->assertArrayHasKey('name', $array);
@@ -279,10 +278,10 @@ class CounterModelTest extends TestCase
     public function test_cache_clearing_on_update()
     {
         $counter = Counter::create(['key' => 'cache_test', 'name' => 'Cache Test']);
-        
+
         // Test that the update method works without mocking cache
         $result = $counter->update(['value' => 100]);
-        
+
         $this->assertTrue($result);
         $this->assertEquals(100, $counter->fresh()->value);
     }
@@ -290,10 +289,10 @@ class CounterModelTest extends TestCase
     public function test_cache_clearing_on_delete()
     {
         $counter = Counter::create(['key' => 'delete_cache_test', 'name' => 'Delete Cache Test']);
-        
+
         // Test that the delete method works
         $result = $counter->delete();
-        
+
         $this->assertTrue($result);
         $this->assertDatabaseMissing('counters', ['key' => 'delete_cache_test']);
     }

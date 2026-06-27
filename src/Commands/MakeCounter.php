@@ -45,11 +45,13 @@ class MakeCounter extends Command
             // Validate inputs
             if (empty($key)) {
                 $this->error('Counter key is required.');
+
                 return self::FAILURE;
             }
 
             if (empty($name)) {
                 $this->error('Counter name is required.');
+
                 return self::FAILURE;
             }
 
@@ -79,9 +81,11 @@ class MakeCounter extends Command
             return self::SUCCESS;
         } catch (CounterAlreadyExists $e) {
             $this->error("❌ Counter '{$key}' already exists!");
+
             return self::FAILURE;
         } catch (\Exception $e) {
             $this->error("❌ Failed to create counter: {$e->getMessage()}");
+
             return self::FAILURE;
         }
     }

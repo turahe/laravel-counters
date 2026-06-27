@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Turahe\Counters;
 
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Contracts\Support\DeferrableProvider;
+use Illuminate\Foundation\Application;
+use Illuminate\Support\ServiceProvider;
 use Turahe\Counters\Classes\Counters;
-use Turahe\Counters\Facades\Counters as CountersFacade;
 use Turahe\Counters\Commands\MakeCounter;
+use Turahe\Counters\Facades\Counters as CountersFacade;
 
 /**
  * Optimized CountersServiceProvider for Laravel 11/12.
@@ -20,7 +21,7 @@ class CountersServiceProvider extends ServiceProvider implements DeferrableProvi
      */
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__ . '/../config/counter.php', 'counter');
+        $this->mergeConfigFrom(__DIR__.'/../config/counter.php', 'counter');
 
         $this->app->singleton(Counters::class, function ($app) {
             return new Counters(
@@ -38,17 +39,17 @@ class CountersServiceProvider extends ServiceProvider implements DeferrableProvi
     {
         // Publish configuration
         $this->publishes([
-            __DIR__ . '/../config/counter.php' => $this->app->configPath('counter.php'),
+            __DIR__.'/../config/counter.php' => $this->app->configPath('counter.php'),
         ], 'counters-config');
 
         // Publish migrations
         $this->publishes([
-            __DIR__ . '/../database/migrations' => $this->app->databasePath('migrations'),
+            __DIR__.'/../database/migrations' => $this->app->databasePath('migrations'),
         ], 'counters-migrations');
 
         // Load migrations
-        if ($this->app instanceof \Illuminate\Foundation\Application) {
-            $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        if ($this->app instanceof Application) {
+            $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
         }
 
         // Register commands
@@ -59,7 +60,7 @@ class CountersServiceProvider extends ServiceProvider implements DeferrableProvi
         }
 
         // Register facade
-        if (!class_exists('Counters')) {
+        if (! class_exists('Counters')) {
             class_alias(CountersFacade::class, 'Counters');
         }
     }

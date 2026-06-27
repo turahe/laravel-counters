@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Turahe\Counters\Tests\Commands;
 
-use Turahe\Counters\Tests\TestCase;
-use Turahe\Counters\Commands\MakeCounter;
+use Symfony\Component\Console\Exception\RuntimeException;
 use Turahe\Counters\Classes\Counters;
-use Turahe\Counters\Exceptions\CounterAlreadyExists;
+use Turahe\Counters\Commands\MakeCounter;
 use Turahe\Counters\Models\Counter;
+use Turahe\Counters\Tests\TestCase;
 
 class MakeCounterTest extends TestCase
 {
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Clear any existing counters
         Counter::query()->delete();
     }
@@ -56,8 +56,8 @@ class MakeCounterTest extends TestCase
 
     public function test_make_counter_command_fails_without_key()
     {
-        $this->expectException(\Symfony\Component\Console\Exception\RuntimeException::class);
-        
+        $this->expectException(RuntimeException::class);
+
         $this->artisan(MakeCounter::class, [
             'name' => 'Test Counter',
         ]);
@@ -65,8 +65,8 @@ class MakeCounterTest extends TestCase
 
     public function test_make_counter_command_fails_without_name()
     {
-        $this->expectException(\Symfony\Component\Console\Exception\RuntimeException::class);
-        
+        $this->expectException(RuntimeException::class);
+
         $this->artisan(MakeCounter::class, [
             'key' => 'test_counter',
         ]);
@@ -91,7 +91,7 @@ class MakeCounterTest extends TestCase
         // Test that the command handles exceptions gracefully
         // We'll test this by creating a counter that already exists
         Counter::create(['key' => 'error_counter', 'name' => 'Error Counter']);
-        
+
         $this->artisan(MakeCounter::class, [
             'key' => 'error_counter',
             'name' => 'Error Counter',

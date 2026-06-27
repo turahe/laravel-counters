@@ -7,6 +7,7 @@ namespace Turahe\Counters\Tests;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Orchestra\Testbench\TestCase as Orchestra;
 use Turahe\Counters\CountersServiceProvider;
+use Turahe\Counters\Facades\Counters;
 
 /**
  * Optimized TestCase for PHP 8.4 and Laravel 11/12.
@@ -33,9 +34,9 @@ abstract class TestCase extends Orchestra
         // Setup default database to use sqlite :memory:
         $app['config']->set('database.default', 'testbench');
         $app['config']->set('database.connections.testbench', [
-            'driver'   => 'sqlite',
+            'driver' => 'sqlite',
             'database' => ':memory:',
-            'prefix'   => '',
+            'prefix' => '',
         ]);
 
         // Setup counter configuration
@@ -50,7 +51,7 @@ abstract class TestCase extends Orchestra
     protected function getPackageAliases($app): array
     {
         return [
-            'Counters' => \Turahe\Counters\Facades\Counters::class,
+            'Counters' => Counters::class,
         ];
     }
 }

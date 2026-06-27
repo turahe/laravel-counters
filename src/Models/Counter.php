@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Turahe\Counters\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Optimized Counter model for PHP 8.4 and Laravel 11/12.
@@ -68,11 +69,11 @@ class Counter extends Model
     public function counterable(): MorphToMany
     {
         return $this->morphedByMany(
-            related: \Illuminate\Database\Eloquent\Model::class,
+            related: Model::class,
             name: 'counterable',
             table: config('counter.tables.table_pivot_name', 'counterables')
         )->withPivot('value')
-          ->withTimestamps();
+            ->withTimestamps();
     }
 
     /**
@@ -189,6 +190,6 @@ class Counter extends Model
      */
     private function clearCache(): void
     {
-        \Illuminate\Support\Facades\Cache::forget("counters:{$this->key}");
+        Cache::forget("counters:{$this->key}");
     }
 }

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Turahe\Counters\Traits;
 
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Turahe\Counters\Facades\Counters;
 use Turahe\Counters\Models\Counter;
 use Turahe\Counters\Models\Counterable;
@@ -25,7 +25,7 @@ trait HasCounter
             name: 'counterable',
             table: config('counter.tables.table_pivot_name', 'counterables')
         )->withPivot('value')
-          ->withTimestamps();
+            ->withTimestamps();
     }
 
     /**
@@ -36,7 +36,7 @@ trait HasCounter
         $counter = $this->counters->where('key', $key)->first();
 
         // Connect the counter to the object if it doesn't exist
-        if (!$counter) {
+        if (! $counter) {
             $this->addCounter($key);
             $counter = $this->counters->where('key', $key)->first();
         }
@@ -50,7 +50,7 @@ trait HasCounter
     public function hasCounter(string $key): bool
     {
         return $this->counters()
-            ->where(config('counter.tables.table_name', 'counters') . '.key', $key)
+            ->where(config('counter.tables.table_name', 'counters').'.key', $key)
             ->exists();
     }
 
@@ -60,8 +60,8 @@ trait HasCounter
     public function getCounterValue(string $key): int
     {
         $counter = $this->getCounter($key);
-        
-        if (!$counter || !$counter->pivot) {
+
+        if (! $counter || ! $counter->pivot) {
             return 0;
         }
 
@@ -97,10 +97,10 @@ trait HasCounter
         try {
             $counter = Counters::get($key);
             $result = $this->counters()->detach($counter->getKey());
-            
+
             // Refresh the relationship
             $this->load('counters');
-            
+
             return $result > 0;
         } catch (\Exception $e) {
             return false;
@@ -114,20 +114,20 @@ trait HasCounter
     {
         try {
             $counter = $this->getCounter($key);
-            
-            if (!$counter || !$counter->pivot) {
+
+            if (! $counter || ! $counter->pivot) {
                 return false;
             }
 
             $newValue = $counter->pivot->value + ($step ?? $counter->step);
-            
+
             $result = $this->counters()->updateExistingPivot($counter->getKey(), [
                 'value' => $newValue,
             ]);
 
             // Refresh the relationship to get the latest pivot value
             $this->load('counters');
-            
+
             return $result > 0;
         } catch (\Exception $e) {
             return false;
@@ -141,20 +141,20 @@ trait HasCounter
     {
         try {
             $counter = $this->getCounter($key);
-            
-            if (!$counter || !$counter->pivot) {
+
+            if (! $counter || ! $counter->pivot) {
                 return false;
             }
 
             $newValue = $counter->pivot->value - ($step ?? $counter->step);
-            
+
             $result = $this->counters()->updateExistingPivot($counter->getKey(), [
                 'value' => $newValue,
             ]);
 
             // Refresh the relationship to get the latest pivot value
             $this->load('counters');
-            
+
             return $result > 0;
         } catch (\Exception $e) {
             return false;
@@ -168,20 +168,20 @@ trait HasCounter
     {
         try {
             $counter = $this->getCounter($key);
-            
-            if (!$counter) {
+
+            if (! $counter) {
                 return false;
             }
 
             $value = $initialValue ?? $counter->initial_value;
-            
+
             $result = $this->counters()->updateExistingPivot($counter->getKey(), [
                 'value' => $value,
             ]);
 
             // Refresh the relationship to get the latest pivot value
             $this->load('counters');
-            
+
             return $result > 0;
         } catch (\Exception $e) {
             return false;
@@ -195,8 +195,8 @@ trait HasCounter
     {
         try {
             $counter = $this->getCounter($key);
-            
-            if (!$counter) {
+
+            if (! $counter) {
                 return false;
             }
 
@@ -206,7 +206,7 @@ trait HasCounter
 
             // Refresh the relationship to get the latest pivot value
             $this->load('counters');
-            
+
             return $result > 0;
         } catch (\Exception $e) {
             return false;
@@ -275,11 +275,11 @@ trait HasCounter
     public function bulkIncrementCounters(array $keys, ?int $step = null): array
     {
         $results = [];
-        
+
         foreach ($keys as $key) {
             $results[$key] = $this->incrementCounter($key, $step);
         }
-        
+
         return $results;
     }
 
@@ -289,11 +289,11 @@ trait HasCounter
     public function bulkDecrementCounters(array $keys, ?int $step = null): array
     {
         $results = [];
-        
+
         foreach ($keys as $key) {
             $results[$key] = $this->decrementCounter($key, $step);
         }
-        
+
         return $results;
     }
 
@@ -303,11 +303,11 @@ trait HasCounter
     public function bulkResetCounters(array $keys, ?int $initialValue = null): array
     {
         $results = [];
-        
+
         foreach ($keys as $key) {
             $results[$key] = $this->resetCounter($key, $initialValue);
         }
-        
+
         return $results;
     }
 }

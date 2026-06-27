@@ -18,6 +18,17 @@ PHPUNIT_L13 := ^12.5.8
 IMAGE = $(PROJECT)-test:php$(1)
 VENDOR_VOLUME = $(PROJECT)_vendor_php$(1)_laravel$(2)
 
+define run_pint
+	$(DOCKER) run --rm \
+		-v "$(CURDIR):/app" \
+		-v $(PROJECT)_vendor_data:/app/vendor \
+		-e LARAVEL_VERSION=$(LARAVEL_VERSION) \
+		-e PHPUNIT_VERSION=$(PHPUNIT_VERSION) \
+		-w /app \
+		$(call IMAGE,$(PHP_VERSION)) \
+		vendor/bin/pint $(1)
+endef
+
 define run_test
 	@echo ==> PHP $(1) ^| Laravel $(2)
 	$(DOCKER) build -f Dockerfile \
@@ -38,7 +49,7 @@ endef
 .PHONY: help test test-all test-php84 test-php85 \
 	test-php84-laravel11 test-php84-laravel12 test-php84-laravel13 \
 	test-php85-laravel12 test-php85-laravel13 \
-	build clean clean-volumes
+	pint pint-test build clean clean-volumes
 
 help: ## Show available targets
 	@echo Usage: make [target]
@@ -53,6 +64,8 @@ help: ## Show available targets
 	@echo   test-php84-laravel13     PHP 8.4 + Laravel 13
 	@echo   test-php85-laravel12     PHP 8.5 + Laravel 12
 	@echo   test-php85-laravel13     PHP 8.5 + Laravel 13
+	@echo   pint                     Fix code style with Laravel Pint
+	@echo   pint-test                Check code style without making changes
 	@echo   build                    Build the test image for selected versions
 	@echo   clean-volumes            Remove cached vendor volumes
 	@echo   clean                    Remove vendor volumes and test images
@@ -61,6 +74,8 @@ help: ## Show available targets
 	@echo   make test
 	@echo   make test-all
 	@echo   make test-php84-laravel12
+	@echo   make pint
+	@echo   make pint-test
 	@echo   make test PHP_VERSION=8.4 LARAVEL_VERSION=$(LARAVEL_12) PHPUNIT_VERSION=$(PHPUNIT_L12)
 
 test: build ## Run tests with default PHP/Laravel versions
@@ -99,6 +114,12 @@ test-php85-laravel12: ## PHP 8.5 + Laravel 12
 
 test-php85-laravel13: ## PHP 8.5 + Laravel 13
 	$(call run_test,8.5,13,$(LARAVEL_13),$(PHPUNIT_L13))
+
+pint: build ## Fix code style with Laravel Pint
+	$(call run_pint,)
+
+pint-test: build ## Check code style with Laravel Pint (dry run)
+	$(call run_pint,--test)
 
 build: ## Build the test image for the selected PHP/Laravel versions
 	$(DOCKER) build -f Dockerfile \

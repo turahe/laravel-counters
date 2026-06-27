@@ -19,7 +19,7 @@ class CounterServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->counters = new Counters();
+        $this->counters = new Counters;
     }
 
     public function test_create_counter(): void
@@ -62,7 +62,7 @@ class CounterServiceTest extends TestCase
     {
         $this->counters->create('test_get_counter', 'Test Get Counter');
         $counter = $this->counters->get('test_get_counter');
-        
+
         $this->assertInstanceOf(CounterModel::class, $counter);
         $this->assertEquals('test_get_counter', $counter->key);
     }
@@ -77,7 +77,7 @@ class CounterServiceTest extends TestCase
     {
         $this->counters->create('test_value_counter', 'Test Value Counter', 42);
         $value = $this->counters->getValue('test_value_counter');
-        
+
         $this->assertEquals(42, $value);
     }
 
@@ -97,7 +97,7 @@ class CounterServiceTest extends TestCase
     {
         $this->counters->create('test_set_value', 'Test Set Value');
         $result = $this->counters->setValue('test_set_value', 50);
-        
+
         $this->assertTrue($result);
         $this->assertDatabaseHas('counters', [
             'key' => 'test_set_value',
@@ -109,7 +109,7 @@ class CounterServiceTest extends TestCase
     {
         $this->counters->create('test_set_step', 'Test Set Step');
         $result = $this->counters->setStep('test_set_step', 5);
-        
+
         $this->assertTrue($result);
         $this->assertDatabaseHas('counters', [
             'key' => 'test_set_step',
@@ -121,7 +121,7 @@ class CounterServiceTest extends TestCase
     {
         $this->counters->create('test_increment', 'Test Increment', 1);
         $result = $this->counters->increment('test_increment', 2);
-        
+
         $this->assertTrue($result);
         $this->assertDatabaseHas('counters', [
             'key' => 'test_increment',
@@ -133,7 +133,7 @@ class CounterServiceTest extends TestCase
     {
         $this->counters->create('test_increment_default', 'Test Increment Default', 1, 3);
         $result = $this->counters->increment('test_increment_default');
-        
+
         $this->assertTrue($result);
         $this->assertDatabaseHas('counters', [
             'key' => 'test_increment_default',
@@ -145,7 +145,7 @@ class CounterServiceTest extends TestCase
     {
         $this->counters->create('test_decrement', 'Test Decrement', 5);
         $result = $this->counters->decrement('test_decrement', 2);
-        
+
         $this->assertTrue($result);
         $this->assertDatabaseHas('counters', [
             'key' => 'test_decrement',
@@ -157,7 +157,7 @@ class CounterServiceTest extends TestCase
     {
         $this->counters->create('test_decrement_default', 'Test Decrement Default', 5, 2);
         $result = $this->counters->decrement('test_decrement_default');
-        
+
         $this->assertTrue($result);
         $this->assertDatabaseHas('counters', [
             'key' => 'test_decrement_default',
@@ -169,9 +169,9 @@ class CounterServiceTest extends TestCase
     {
         $this->counters->create('test_reset', 'Test Reset', 10);
         $this->counters->increment('test_reset', 5); // Value becomes 15
-        
+
         $result = $this->counters->reset('test_reset');
-        
+
         $this->assertTrue($result);
         $this->assertDatabaseHas('counters', [
             'key' => 'test_reset',
@@ -183,7 +183,7 @@ class CounterServiceTest extends TestCase
     {
         $this->counters->create('test_delete', 'Test Delete');
         $result = $this->counters->delete('test_delete');
-        
+
         $this->assertTrue($result);
         $this->assertDatabaseMissing('counters', [
             'key' => 'test_delete',
@@ -195,9 +195,9 @@ class CounterServiceTest extends TestCase
         $this->counters->create('counter1', 'Counter 1');
         $this->counters->create('counter2', 'Counter 2');
         $this->counters->create('counter3', 'Counter 3');
-        
+
         $counters = $this->counters->getAll();
-        
+
         $this->assertCount(3, $counters);
         $this->assertContains('counter1', $counters->pluck('key'));
         $this->assertContains('counter2', $counters->pluck('key'));
@@ -209,9 +209,9 @@ class CounterServiceTest extends TestCase
         $this->counters->create('test_search_1', 'Test Search Counter 1');
         $this->counters->create('test_search_2', 'Test Search Counter 2');
         $this->counters->create('other_counter', 'Other Counter');
-        
+
         $counters = $this->counters->getAll('test_search');
-        
+
         $this->assertCount(2, $counters);
         $this->assertContains('test_search_1', $counters->pluck('key'));
         $this->assertContains('test_search_2', $counters->pluck('key'));
@@ -222,14 +222,14 @@ class CounterServiceTest extends TestCase
         $this->counters->create('bulk1', 'Bulk Counter 1', 0);
         $this->counters->create('bulk2', 'Bulk Counter 2', 0);
         $this->counters->create('bulk3', 'Bulk Counter 3', 0);
-        
+
         $results = $this->counters->bulkIncrement(['bulk1', 'bulk2', 'bulk3'], 2);
-        
+
         $this->assertCount(3, $results);
         $this->assertTrue($results['bulk1']);
         $this->assertTrue($results['bulk2']);
         $this->assertTrue($results['bulk3']);
-        
+
         $this->assertDatabaseHas('counters', ['key' => 'bulk1', 'value' => 2]);
         $this->assertDatabaseHas('counters', ['key' => 'bulk2', 'value' => 2]);
         $this->assertDatabaseHas('counters', ['key' => 'bulk3', 'value' => 2]);
@@ -239,13 +239,13 @@ class CounterServiceTest extends TestCase
     {
         $this->counters->create('bulk_dec1', 'Bulk Decrement 1', 10);
         $this->counters->create('bulk_dec2', 'Bulk Decrement 2', 10);
-        
+
         $results = $this->counters->bulkDecrement(['bulk_dec1', 'bulk_dec2'], 3);
-        
+
         $this->assertCount(2, $results);
         $this->assertTrue($results['bulk_dec1']);
         $this->assertTrue($results['bulk_dec2']);
-        
+
         $this->assertDatabaseHas('counters', ['key' => 'bulk_dec1', 'value' => 7]);
         $this->assertDatabaseHas('counters', ['key' => 'bulk_dec2', 'value' => 7]);
     }
@@ -255,15 +255,15 @@ class CounterServiceTest extends TestCase
         $this->counters->create('stats1', 'Stats 1', 10);
         $this->counters->create('stats2', 'Stats 2', 20);
         $this->counters->create('stats3', 'Stats 3', 30);
-        
+
         $stats = $this->counters->getStats();
-        
+
         $this->assertArrayHasKey('total_counters', $stats);
         $this->assertArrayHasKey('total_value', $stats);
         $this->assertArrayHasKey('average_value', $stats);
         $this->assertArrayHasKey('max_value', $stats);
         $this->assertArrayHasKey('min_value', $stats);
-        
+
         $this->assertEquals(3, $stats['total_counters']);
         $this->assertEquals(60, $stats['total_value']);
         $this->assertEquals(20.0, $stats['average_value']);
@@ -274,17 +274,17 @@ class CounterServiceTest extends TestCase
     public function test_increment_if_not_has_cookies_increments_and_sets_cookie(): void
     {
         $this->counters->create('cookie_counter', 'Cookie Counter', 0, 1);
-        
+
         // Simulate no cookie present
         $this->app['request']->cookies->remove('counters-cookie-cookie_counter');
-        
+
         $result = $this->counters->incrementIfNotHasCookies('cookie_counter');
         $this->assertTrue($result);
         $this->assertDatabaseHas('counters', [
             'key' => 'cookie_counter',
             'value' => 1,
         ]);
-        
+
         // Simulate cookie present
         $this->app['request']->cookies->set('counters-cookie-cookie_counter', '1');
         $result = $this->counters->incrementIfNotHasCookies('cookie_counter');
@@ -294,17 +294,17 @@ class CounterServiceTest extends TestCase
     public function test_decrement_if_not_has_cookies_decrements_and_sets_cookie(): void
     {
         $this->counters->create('cookie_counter_dec', 'Cookie Counter Dec', 2, 1);
-        
+
         // Simulate no cookie present
         $this->app['request']->cookies->remove('counters-cookie-cookie_counter_dec');
-        
+
         $result = $this->counters->decrementIfNotHasCookies('cookie_counter_dec');
         $this->assertTrue($result);
         $this->assertDatabaseHas('counters', [
             'key' => 'cookie_counter_dec',
             'value' => 1,
         ]);
-        
+
         // Simulate cookie present
         $this->app['request']->cookies->set('counters-cookie-cookie_counter_dec', '1');
         $result = $this->counters->decrementIfNotHasCookies('cookie_counter_dec');

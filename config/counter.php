@@ -1,6 +1,8 @@
 <?php
 
 declare(strict_types=1);
+use Turahe\Counters\Models\Counter;
+use Turahe\Counters\Models\Counterable;
 
 return [
     /*
@@ -12,8 +14,8 @@ return [
     |
     */
     'models' => [
-        'counter' => \Turahe\Counters\Models\Counter::class,
-        'counterable' => \Turahe\Counters\Models\Counterable::class,
+        'counter' => Counter::class,
+        'counterable' => Counterable::class,
     ],
 
     /*
